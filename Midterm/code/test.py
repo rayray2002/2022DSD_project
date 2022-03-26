@@ -25,7 +25,7 @@ with open("pattern1.dat") as f:
 # pprint(b)
 
 x_gs = b / 20
-x_j = b / 20
+x_j = np.zeros(22, dtype=np.float64)
 x_ans = b / 20
 lamb = 0.5
 
