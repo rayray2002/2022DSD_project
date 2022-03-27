@@ -6,7 +6,7 @@ module control(
            output [3:0] count_o
        );
 
-reg signed [12:0] count;
+reg signed [14:0] count;
 
 assign count_o = count[3:0];
 
@@ -19,6 +19,6 @@ always @(posedge clk) begin
     end
 end
 
-assign out_valid = ~count[12] & count[11];
+assign out_valid = ~count[14] & count[13];
 
 endmodule

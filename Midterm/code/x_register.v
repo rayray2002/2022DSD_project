@@ -29,7 +29,7 @@ integer i;
 always @(posedge clk) begin
     if (rst)
         for (i = 0; i < 16; i = i + 1) begin
-            // registers[i] <= (i+1)<<16;
+            // registers[i] <= (400*(i+1))<<16;
             registers[i] <= 32'b0;
         end
     else begin

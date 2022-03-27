@@ -27,9 +27,9 @@ reg signed [32:0] data2;
 reg signed [32:0] data3;
 
 always @(*) begin
-    dataP1 = count[3] & count[2] & (count[1] | count[0]) ? 0 : dataP1_i;
-    dataP2 = count[3] & count[2] & count[1] ? 0 : dataP2_i;
-    dataP3 = count[3] & count[2] & count[1] & count[0] ? 0 : dataP3_i;
+    dataP3 = (count[3] & count[2] & (count[1] | count[0])) ? 0 : dataP3_i;
+    dataP2 = (count[3] & count[2] & count[1]) ? 0 : dataP2_i;
+    dataP1 = (count[3] & count[2] & count[1] & count[0]) ? 0 : dataP1_i;
 
     dataM3 = ~count[3] & ~count[2] & ~(count[1] & count[0]) ? 0 : dataM3_i;
     dataM2 = ~count[3] & ~count[2] & ~count[1] ? 0 : dataM2_i;

@@ -25,13 +25,14 @@ with open("./code/pattern1.dat") as f:
 # pprint(b)
 
 x_gs = b / 20
-tmp = [0,0,0]+list(range(1, 17))+[0,0,0]
-x_j = np.array(tmp)
+tmp = [0, 0, 0] + list(range(400, 6500, 400)) + [0, 0, 0]
+x_j = np.array(tmp, dtype=np.float64)
+x_j = np.zeros(22, dtype=np.float64)
 x_ans = b / 20
 lamb = 0.5
 
-for i in range(5):
-    print(x_j)
+for i in range(3000):
+    # print(x_j)
     x_j[3:19] = (
         (
             b
@@ -59,6 +60,30 @@ for i in range(3000):
             + (x_ans[j + 3] + x_ans[j - 3])
         ) / 20
 
-print(np.square(A@x_ans[3:19]-b[3:19]).sum())
-print(np.square(A@x_gs[3:19]-b[3:19]).sum())
-print(np.square(A@x_j[3:19]-b[3:19]).sum())
+print(np.square(A @ x_ans[3:19] - b[3:19]).sum())
+print(np.square(A @ x_gs[3:19] - b[3:19]).sum())
+print(np.square(A @ x_j[3:19] - b[3:19]).sum())
+print(x_j)
+
+x = np.array(
+    [
+        400.7906036377,
+        1686.0266418457,
+        2453.5168762207,
+        570.5681304932,
+        719.9454803467,
+        1749.0246887207,
+        -10.1293487549,
+        531.5038757324,
+        -465.1992187500,
+        1104.4526367188,
+        2215.2684631348,
+        1278.3922576904,
+        -744.3394470215,
+        -125.3479614258,
+        1309.5965118408,
+        -723.6249542236,
+    ]
+)
+
+print(A @ x - b[3:19])

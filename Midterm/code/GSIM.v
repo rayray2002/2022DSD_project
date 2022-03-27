@@ -105,8 +105,9 @@ divide20 stage5678(
              x_new
          );
 
-assign x_sum = x_new + xTarget_o;
-assign xTarget_in = x_sum >>> 1;
+// assign x_sum = x_new + xTarget_o;
+// assign xTarget_in = x_sum >>> 1;
+assign xTarget_in = x_new*0.5 + xTarget_o*0.5;
 assign x_out = x_o;
 
 endmodule
