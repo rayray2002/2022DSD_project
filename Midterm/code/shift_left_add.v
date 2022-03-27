@@ -1,14 +1,14 @@
 module shift_left_add (
            input clk,
            input rst,
-           input signed [31:0] data_i,
-           output reg signed [32:0] data_o
+           input signed [37:0] data_i,
+           output reg signed [38:0] data_o
        );
 
 parameter SHIFT = 1;
 
-reg signed [32:0] out;
-wire signed [32:0] shifted;
+reg signed [37:0] out;
+wire signed [38:0] shifted;
 
 assign shifted = data_i << SHIFT;
 

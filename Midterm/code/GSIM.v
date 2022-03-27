@@ -41,7 +41,7 @@ wire signed [32:0]  data2;
 wire signed [32:0]  data3;
 wire signed [37:0]  sum;
 wire signed [32:0]  x_new;
-wire signed [32:0]  x_sum;
+wire signed [33:0]  x_sum;
 
 // instances declarations
 control control(
@@ -105,9 +105,10 @@ divide20 stage5678(
              x_new
          );
 
-// assign x_sum = x_new + xTarget_o;
-// assign xTarget_in = x_sum >>> 1;
-assign xTarget_in = x_new*0.5 + xTarget_o*0.5;
+assign x_sum = x_new + xTarget_o;
+assign xTarget_in = x_sum >>> 1;
+// assign xTarget_in = x_new*0.5 + xTarget_o*0.5;
+// assign xTarget_in = (x_new + xTarget_o)>>>1;
 assign x_out = x_o;
 
 endmodule

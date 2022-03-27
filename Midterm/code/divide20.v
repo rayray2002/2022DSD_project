@@ -10,17 +10,18 @@ module divide20(
            output signed [32:0] data_o
        );
 
-wire signed [31:0] shift4;
-wire signed [31:0] shift8;
-wire signed [31:0] shift16;
-wire signed [31:0] shift6;
+// wire signed [31:0] big_in;
+wire signed [37:0] shift4;
+wire signed [37:0] shift8;
+wire signed [37:0] shift16;
+wire signed [38:0] shift1;
 
-assign shift6 = (data_i >>> 6);
+assign data_o = (shift1 >>> 6);
 
 shift_right_4_add shift4_add (
                     .clk(clk),
                     .rst(rst),
-                    .data_i(shift6),
+                    .data_i(data_i),
                     .data_o(shift4)
                 );
 // defparam shift4_add.SHIFT = 4;
@@ -48,7 +49,7 @@ shift_left_add shift1_add(
                    .clk(clk),
                    .rst(rst),
                    .data_i(shift16),
-                   .data_o(data_o)
+                   .data_o(shift1)
                );
 // defparam shift1_add.SHIFT = 1;
 

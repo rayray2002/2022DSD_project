@@ -63,7 +63,7 @@ for i in range(3000):
 print(np.square(A @ x_ans[3:19] - b[3:19]).sum())
 print(np.square(A @ x_gs[3:19] - b[3:19]).sum())
 print(np.square(A @ x_j[3:19] - b[3:19]).sum())
-print(x_j)
+# print(x_j)
 
 x = np.array(
     [
@@ -86,4 +86,4 @@ x = np.array(
     ]
 )
 
-print(A @ x - b[3:19])
+# print(A @ x - b[3:19])
