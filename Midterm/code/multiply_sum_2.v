@@ -3,17 +3,17 @@
 module multiply_sum_2(
            input clk,
            input rst,
-           input signed [31:0] shift2_add_i,
-           input signed [31:0] shift2_i,
-           input signed [31:0] add_b_i,
-           input signed [31:0] multiply6_i,
+           input signed [34:0] shift2_add_i,
+           input signed [34:0] shift2_i,
+           input signed [32:0] add_b_i,
+           input signed [35:0] multiply6_i,
 
-           output reg signed [31:0] multiply13_o,
-           output reg signed [31:0] minus_o
+           output reg signed [36:0] multiply13_o,
+           output reg signed [35:0] minus_o
        );
 
-reg signed [31:0] multiply13;
-reg signed [31:0] minus;
+reg signed [36:0] multiply13;
+reg signed [35:0] minus;
 
 always @(*) begin
     multiply13 = shift2_add_i + (shift2_i<<1);

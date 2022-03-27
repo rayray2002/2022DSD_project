@@ -19,17 +19,19 @@ def twos_complement(hexstr, bits):
     return value
 
 
-with open("pattern1.dat") as f:
+with open("./code/pattern1.dat") as f:
     for i, line in enumerate(f):
         b[i + 3] = twos_complement(line[:4], 16)
 # pprint(b)
 
 x_gs = b / 20
-x_j = np.zeros(22, dtype=np.float64)
+tmp = [0,0,0]+list(range(1, 17))+[0,0,0]
+x_j = np.array(tmp)
 x_ans = b / 20
 lamb = 0.5
 
-for i in range(256):
+for i in range(5):
+    print(x_j)
     x_j[3:19] = (
         (
             b

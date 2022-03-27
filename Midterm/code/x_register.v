@@ -17,7 +17,7 @@ module x_register (
        );
 
 // parameters
-parameter TARGET = 9;
+parameter TARGET = 7;
 
 // wire & reg declarations
 reg signed [31:0] registers [0:15];
@@ -29,8 +29,8 @@ integer i;
 always @(posedge clk) begin
     if (rst)
         for (i = 0; i < 16; i = i + 1) begin
-            registers[i] <= i+1;
-            // registers[i] <= 32'b0;
+            // registers[i] <= (i+1)<<16;
+            registers[i] <= 32'b0;
         end
     else begin
         registers[TARGET-1] <= dataTarget_i;
@@ -63,51 +63,8 @@ always @(posedge clk) begin
     end
 end
 
-// instances
-// pipeline_reg P1(
-//                  clk,
-//                  rst,
-//                  registers[1],
-//                  dataP1_o
-//              );
-
-// pipeline_reg P2(
-//                  clk,
-//                  rst,
-//                  registers[2],
-//                  dataP2_o
-//              );
-
-// pipeline_reg P3(
-//                  clk,
-//                  rst,
-//                  registers[3],
-//                  dataP3_o
-//              );
-
-// pipeline_reg M1(
-//                  clk,
-//                  rst,
-//                  registers[15],
-//                  dataM1_o
-//              );
-
-// pipeline_reg M2(
-//                  clk,
-//                  rst,
-//                  registers[14],
-//                  dataM2_o
-//              );
-
-// pipeline_reg M3(
-//                  clk,
-//                  rst,
-//                  registers[13],
-//                  dataM3_o
-//              );
-
 // assign
 assign dataTarget_o = registers[TARGET];
-assign data_o = registers[0];
+assign data_o = registers[15];
 
 endmodule

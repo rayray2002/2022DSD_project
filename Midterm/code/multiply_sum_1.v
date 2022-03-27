@@ -4,20 +4,20 @@ module multiply_sum_1(
            input clk,
            input rst,
            input signed [15:0] b_i,
-           input signed [31:0] data1_i,
-           input signed [31:0] data2_i,
-           input signed [31:0] data3_i,
+           input signed [32:0] data1_i,
+           input signed [32:0] data2_i,
+           input signed [32:0] data3_i,
 
-           output reg signed [31:0] shift2_add_o,
-           output reg signed [31:0] shift2_o,
-           output reg signed [31:0] add_b_o,
-           output reg signed [31:0] multiply6_o
+           output reg signed [35:0] shift2_add_o,
+           output reg signed [34:0] shift2_o,
+           output reg signed [32:0] add_b_o,
+           output reg signed [35:0] multiply6_o
        );
 
-reg signed [31:0] shift2_add;
-reg signed [31:0] shift2;
-reg signed [31:0] add_b;
-reg signed [31:0] multiply6;
+reg signed [35:0] shift2_add;
+reg signed [34:0] shift2;
+reg signed [32:0] add_b;
+reg signed [35:0] multiply6;
 
 always @(*) begin
     shift2 = data1_i << 2;

@@ -3,10 +3,12 @@ module control(
            input reset,
            input in_en,
            output out_valid,
-           output reg signed [15:0] count
+           output signed [3:0] count_o
        );
 
-// reg [12:0] count;
+reg signed [12:0] count;
+
+assign count_o = count[3:0];
 
 always @(posedge clk) begin
     if (in_en|reset) begin
@@ -17,6 +19,6 @@ always @(posedge clk) begin
     end
 end
 
-assign out_valid = ~count[15] & count[14];
+assign out_valid = ~count[12] & count[11];
 
 endmodule

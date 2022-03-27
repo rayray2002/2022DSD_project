@@ -33,6 +33,6 @@ always @(posedge clk) begin
 end
 
 // assign
-assign b_o = registers[14];
+assign b_o = registers[15];
 
 endmodule

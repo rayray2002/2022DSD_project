@@ -25,7 +25,7 @@ input   [15:0]  b_in;
 output signed [31:0]  x_out;
 
 // reg & wire declarations
-wire [14:0]  count;
+wire [3:0]  count;
 wire signed [15:0]  b_o;
 wire signed [31:0]  xTarget_in;
 wire signed [31:0]  xTarget_o;
@@ -36,11 +36,12 @@ wire signed [31:0]  xP3;
 wire signed [31:0]  xM1;
 wire signed [31:0]  xM2;
 wire signed [31:0]  xM3;
-wire signed [31:0]  data1;
-wire signed [31:0]  data2;
-wire signed [31:0]  data3;
-wire signed [31:0]  sum;
+wire signed [32:0]  data1;
+wire signed [32:0]  data2;
+wire signed [32:0]  data3;
+wire signed [37:0]  sum;
 wire signed [31:0]  x_new;
+wire signed [32:0]  x_sum;
 
 // instances declarations
 control control(
@@ -104,7 +105,8 @@ divide20 stage5678(
              x_new
          );
 
-assign xTarget_in = ((x_new + xTarget_o) >>> 1);
+assign x_sum = x_new + xTarget_o;
+assign xTarget_in = x_sum >>> 1;
 assign x_out = x_o;
 
 endmodule
