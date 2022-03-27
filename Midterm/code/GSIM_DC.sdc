@@ -1,6 +1,8 @@
 read_verilog GSIM.v
 current_design [get_designs GSIM]
 
+check_design
+
 # operating conditions and boundary conditions #
 
 set cycle  3         ;#clock period defined by designer

@@ -1,19 +1,16 @@
-module shift_left_add (
+module shift_right_16_add (
            input clk,
            input rst,
            input signed [31:0] data_i,
-           output reg signed [32:0] data_o
+           output reg signed [31:0] data_o
        );
 
-parameter SHIFT = 1;
+parameter SHIFT = 16;
 
-reg signed [32:0] out;
-wire signed [32:0] shifted;
-
-assign shifted = data_i << SHIFT;
+reg signed [31:0] out;
 
 always @(*) begin
-    out = shifted + data_i;
+    out = ((data_i >>> SHIFT) + data_i);
 end
 
 always @(posedge clk) begin

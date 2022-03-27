@@ -3,7 +3,7 @@ module control(
            input reset,
            input in_en,
            output out_valid,
-           output signed [3:0] count_o
+           output [3:0] count_o
        );
 
 reg signed [12:0] count;

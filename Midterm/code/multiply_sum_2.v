@@ -3,7 +3,7 @@
 module multiply_sum_2(
            input clk,
            input rst,
-           input signed [34:0] shift2_add_i,
+           input signed [35:0] shift2_add_i,
            input signed [34:0] shift2_i,
            input signed [32:0] add_b_i,
            input signed [35:0] multiply6_i,
@@ -30,19 +30,5 @@ always @(posedge clk) begin
         minus_o <= minus;
     end
 end
-
-// pipeline_reg D1(
-//                  clk,
-//                  rst,
-//                  multiply13,
-//                  multiply13_o
-//              );
-
-// pipeline_reg D2(
-//                  clk,
-//                  rst,
-//                  minus,
-//                  minus_o
-//              );
 
 endmodule

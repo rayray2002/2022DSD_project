@@ -40,7 +40,7 @@ wire signed [32:0]  data1;
 wire signed [32:0]  data2;
 wire signed [32:0]  data3;
 wire signed [37:0]  sum;
-wire signed [31:0]  x_new;
+wire signed [32:0]  x_new;
 wire signed [32:0]  x_sum;
 
 // instances declarations
