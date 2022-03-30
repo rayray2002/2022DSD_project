@@ -31,8 +31,10 @@ x_j = np.zeros(22, dtype=np.float64)
 x_ans = b / 20
 lamb = 0.5
 
-for i in range(3000):
+for i in range(256):
     # print(x_j)
+    if i > 128:
+        lamb = 0.6
     x_j[3:19] = (
         (
             b
@@ -60,6 +62,7 @@ for i in range(3000):
             + (x_ans[j + 3] + x_ans[j - 3])
         ) / 20
 
+x_ans /= 1
 print(np.square(A @ x_ans[3:19] - b[3:19]).sum())
 print(np.square(A @ x_gs[3:19] - b[3:19]).sum())
 print(np.square(A @ x_j[3:19] - b[3:19]).sum())
