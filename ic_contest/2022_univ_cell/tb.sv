@@ -1,7 +1,7 @@
 `timescale 1ns/100ps
 `define CYCLE      10.0  
 `define SDFFILE    "./JAM_syn.sdf"
-`define End_CYCLE  10000000
+`define End_CYCLE  400000
 `define PAT        "cost_rom"
 
 `ifdef P1
@@ -52,10 +52,10 @@ initial begin
    $fsdbDumpMDA;
 end
 
-//initial begin
-//    $dumpvars();
-//    $dumpfile("JAM.vcd");
-//end
+initial begin
+   $dumpvars();
+   $dumpfile("JAM.vcd");
+end
 
 initial begin
     $display("*******************************");
@@ -180,8 +180,8 @@ always @(posedge CLK ) begin
                 $finish;
             end
         end
-assert (W<10) else $display("ERROR,at cycle %-d,  W = %d >10",cycle,W);
-assert (J<10) else $display("ERROR,at cycle %-d,  J = %d >10",cycle,J);
+// assert (W<10) else $display("ERROR,at cycle %-d,  W = %d >10",cycle,W);
+// assert (J<10) else $display("ERROR,at cycle %-d,  J = %d >10",cycle,J);
     end
 end
 endmodule

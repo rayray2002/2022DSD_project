@@ -14,11 +14,8 @@ module JAM (
            output Valid
        );
 
-reg t_valid;
-
-wire permute_valid, count8;
-wire [9:0] totalCost;
-
+wire permute_valid, sumFinish, permute_out;
+wire [10:0] totalCost;
 
 permute permute (
             .W(W),
@@ -26,25 +23,38 @@ permute permute (
             .rst(RST),
             .valid(permute_valid),
             .J(J),
-            .finish(count8)
+            .finish(sum_start)
         );
 
 accumulator accumulator (
                 .clk(CLK),
                 .rst(RST),
                 .i_cost(Cost),
-                .i_count(W),
-                .o_cost()
+                .count(W),
+                .o_cost(totalCost),
+                .sum_out(sum_out),
+                .finish(sumFinish)
             );
 
 control control (
             .clk(CLK),
             .rst(RST),
             .permute_valid(permute_valid),
-            .W(W),
+            .sum_valid(sumFinish),
             .out_valid(Valid),
-            .count8(count8)
+            .permute_out(permute_out),
+            .sum_out(sum_out),
+            .sum_start(sum_start)
         );
+
+result result (
+           .clk(CLK),
+           .rst(RST),
+           .sumFinish(sumFinish),
+           .i_sum(totalCost),
+           .matchCount(MatchCount),
+           .minCost(MinCost)
+       );
 
 endmodule
 

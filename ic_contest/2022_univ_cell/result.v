@@ -1,37 +1,25 @@
 module result (
            input clk,
            input rst,
-           input read,
-           input [7:0] i_sum,
-           output reg [3:0] o_num
+           input sumFinish,
+           input [10:0] i_sum,
+           output reg [3:0] matchCount,
+           output reg [10:0] minCost
        );
 
-reg [3:0] num;
-reg [7:0] sum_min;
-
-always @(posedge clk or negedge rst) begin
+always @(posedge sumFinish or posedge rst) begin
     if (rst) begin
-        num <= 0;
-        o_num <= 0;
-        sum_min <= 0;
+        matchCount <= 0;
+        minCost <= 10'b1111111111;
     end else begin
-       
-        if (i_sum < sum_min) begin
-            sum_min <= i_sum;
-            num <= 1;
+        if (i_sum < minCost) begin
+            minCost <= i_sum;
+            matchCount <= 1;
         end else begin
-            
-            if (i_sum == sum_min) begin
-                num <= num + 1;
+            if (i_sum == minCost) begin
+                matchCount <= matchCount + 1;
             end
         end
-    end
-
-    
-    if (read) begin
-        o_num <= num;
-        num <= 0;
-        sum_min <= 0;
     end
 end
 endmodule

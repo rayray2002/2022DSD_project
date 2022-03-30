@@ -1,3 +1,8 @@
+read_verilog JAM.v
+current_design [get_designs JAM]
+
+check_design
+
 # operating conditions and boundary conditions #
 
 set cycle 10.0
@@ -22,3 +27,16 @@ set_wire_load_model -name tsmc13_wl10 -library slow
 set_max_fanout 20 [all_inputs]
                      
 
+#Compile and save files
+#You may modified setting of compile 
+#####################################################
+compile
+write_sdf -version 2.1 JAM_syn.sdf
+write -format verilog -hier -output JAM_syn.v
+write -format ddc     -hier -output JAM_syn.ddc  
+#####################################################  
+
+report_timing
+report_area -hierarchy   
+
+quit

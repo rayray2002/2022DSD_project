@@ -7,26 +7,26 @@ module permute (
            output [2:0] J
        );
 
-parameter FIND_PIVOT = 1;
-parameter SWAP = 2;
-parameter REVERSE = 3;
-parameter OUT = 4;
+parameter FIND_PIVOT = 0;
+parameter SWAP = 1;
+parameter REVERSE = 2;
+parameter OUT = 3;
 
 reg [2:0] permutaion [0:7];
 reg [2:0] permutaion_out [0:7];
-reg [3:0] pivotIndex;
-reg [3:0] swapIndex;
-reg [2:0] state;
+reg [2:0] pivotIndex;
+reg [2:0] swapIndex;
+reg [2:0] index;
+reg [3:0] swapTarget;
+reg [1:0] state;
 integer i;
-
-reg [7:0] tmp [0:7];
 
 assign J = permutaion[W];
 assign valid = (state == OUT);
 
 always @(posedge clk) begin
     if (rst) begin
-        for (i = 0; i<8; i=i+1) begin
+        for (i = 0; i < 8; i = i + 1) begin
             permutaion[i] <= 7-i;
             permutaion_out[i] <= 7-i;
         end
@@ -37,19 +37,27 @@ always @(posedge clk) begin
         if (state == FIND_PIVOT) begin
             if (permutaion[pivotIndex] > permutaion[pivotIndex+1])
                 state <= SWAP;
+            index <= pivotIndex;
             pivotIndex <= pivotIndex + 1;
+            swapTarget <= 4'b1111;
+            // swapIndex <= pivotIndex;
 
         end else if (state == SWAP) begin
-            if (permutaion[swapIndex] > permutaion[pivotIndex]) begin
-                state <= REVERSE;
+            if ((permutaion[index] > permutaion[pivotIndex]) && (swapTarget > permutaion[index])) begin
+                // swapTarget <= permutaion[swapIndex];
+                swapIndex <= index;
+                swapTarget <= permutaion[index];
+                
+            end else if (index == 0) begin
                 permutaion[swapIndex] <= permutaion[pivotIndex];
                 permutaion[pivotIndex] <= permutaion[swapIndex];
+                state <= REVERSE;
             end else
-                swapIndex <= swapIndex + 1;
+                index <= index - 1;
 
         end else if (state == REVERSE) begin
             // suppose the xth to 8th need to be reversed
-            case (swapIndex)
+            case (pivotIndex)
                 2: begin
                     permutaion[0] <= permutaion[1];
                     permutaion[1] <= permutaion[0];
@@ -95,11 +103,12 @@ always @(posedge clk) begin
             state <= OUT;
         end else begin
             if (finish) begin
-                for (i = 0; i<8; i=i+1) begin
+                for (i = 0; i < 8; i = i + 1) begin
                     permutaion_out[i] <= permutaion[i];
                 end
                 pivotIndex <= 0;
                 swapIndex <= 0;
+                
                 state <= FIND_PIVOT;
             end else
                 state <= OUT;
