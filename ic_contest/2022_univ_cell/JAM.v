@@ -10,11 +10,11 @@ module JAM (
            output [2:0] J,
            input [7:0] Cost,
            output [3:0] MatchCount,
-           output [9:0] MinCost,
+           output [10:0] MinCost,
            output Valid
        );
 
-wire permute_valid, sumFinish, permute_out;
+wire permute_valid, sumFinish, permute_out, sum_start, sum_out;
 wire [10:0] totalCost;
 
 permute permute (

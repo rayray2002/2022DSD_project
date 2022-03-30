@@ -19,19 +19,19 @@ reg [18:0] count;
 
 assign out_valid = count[18:0] == 19'h9d7f;
 
-// always @(*) begin
-//     permute_out = 0;
-//     sum_out = 0;
-//     // sum_start = 0;
+always @(*) begin
+    permute_out = 0;
+    sum_out = 0;
+    // sum_start = 0;
 
-//     if (state == PERMUTE) begin
-//         permute_out = 1;
-//     end else if (state == ACCUMULATE) begin
-//         // sum_start = 1;
-//     end else if (state == RESULT) begin
-//         sum_out = 1;
-//     end
-// end
+    if (state == PERMUTE) begin
+        permute_out = 1;
+    end else if (state == ACCUMULATE) begin
+        // sum_start = 1;
+    end else if (state == RESULT) begin
+        sum_out = 1;
+    end
+end
 
 always @(posedge clk) begin
     if (rst) begin
