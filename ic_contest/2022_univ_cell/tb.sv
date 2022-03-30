@@ -1,7 +1,7 @@
-`timescale 1ns/100ps
-`define CYCLE      1.0  
+`timescale 1ns/10ps
+`define CYCLE      9.9
 `define SDFFILE    "./JAM_syn.sdf"
-`define End_CYCLE  600000
+`define End_CYCLE  1000000
 `define PAT        "cost_rom"
 
 `ifdef P1
@@ -30,7 +30,7 @@ wire [2:0] W;
 wire [2:0] J;
 reg [6:0] Cost;
 wire [3:0] MatchCount;
-wire [8:0] MinCost;
+wire [9:0] MinCost;
 JAM u_JAM(.CLK(CLK),
         .RST(RST),
         .W(W),
@@ -46,11 +46,11 @@ JAM u_JAM(.CLK(CLK),
 
 always begin #(`CYCLE/2) CLK = ~CLK; end
 
-initial begin
-   $fsdbDumpfile("JAM.fsdb");
-   $fsdbDumpvars();
-   $fsdbDumpMDA;
-end
+// initial begin
+//    $fsdbDumpfile("JAM.fsdb");
+//    $fsdbDumpvars();
+//    $fsdbDumpMDA;
+// end
 
 initial begin
    $dumpvars();

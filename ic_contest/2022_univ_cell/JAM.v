@@ -18,7 +18,7 @@ wire permute_valid, sumFinish, permute_out, sum_start, sum_out;
 wire [10:0] totalCost;
 
 permute permute (
-            .W(W),
+            W(W),
             .clk(CLK),
             .rst(RST),
             .valid(permute_valid),

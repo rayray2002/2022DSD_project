@@ -5,7 +5,7 @@ check_design
 
 # operating conditions and boundary conditions #
 
-set cycle 10.0
+set cycle 7
 create_clock -name CLK  -period $cycle   [get_ports  CLK] 
 
 set_dont_touch_network      [all_clocks]
