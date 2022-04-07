@@ -4,8 +4,8 @@
 module pipeline_reg(
            input clk,
            input rst,
-           input [31:0] data_i,
-           output reg [31:0] data_o
+           input [`REG_WIDTH:0] data_i,
+           output reg [`REG_WIDTH:0] data_o
        );
 
 always @(posedge clk) begin

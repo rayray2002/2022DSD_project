@@ -1,26 +1,28 @@
 // `include "pipeline_reg.v"
+`include "const.v"
+
 
 module x_register (
            input clk,
            input rst,
-           input signed [31:0] dataTarget_i,
-           output signed [31:0] dataTarget_o,
+           input signed [`REG_WIDTH:0] dataTarget_i,
+           output signed [`REG_WIDTH:0] dataTarget_o,
 
-           output reg signed [31:0] dataP1_o,
-           output reg signed [31:0] dataM1_o,
-           output reg signed [31:0] dataP2_o,
-           output reg signed [31:0] dataM2_o,
-           output reg signed [31:0] dataP3_o,
-           output reg signed [31:0] dataM3_o,
+           output reg signed [`REG_WIDTH:0] dataP1_o,
+           output reg signed [`REG_WIDTH:0] dataM1_o,
+           output reg signed [`REG_WIDTH:0] dataP2_o,
+           output reg signed [`REG_WIDTH:0] dataM2_o,
+           output reg signed [`REG_WIDTH:0] dataP3_o,
+           output reg signed [`REG_WIDTH:0] dataM3_o,
 
-           output signed [31:0] data_o
+           output signed [`REG_WIDTH:0] data_o
        );
 
 // parameters
 parameter TARGET = 7;
 
 // wire & reg declarations
-reg signed [31:0] registers [0:15];
+reg signed [`REG_WIDTH:0] registers [0:15];
 integer i;
 
 // combinational logic
@@ -65,6 +67,6 @@ end
 
 // assign
 assign dataTarget_o = registers[TARGET];
-assign data_o = registers[15];
+assign data_o = registers[15][`REG_WIDTH:`REG_WIDTH-31];
 
 endmodule

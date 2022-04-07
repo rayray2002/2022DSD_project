@@ -1,13 +1,15 @@
+`include "const.v"
+
 module shift_right_4_add (
            input clk,
            input rst,
-           input signed [37:0] data_i,
-           output reg signed [37:0] data_o
+           input signed [`REG_WIDTH+6:0] data_i,
+           output reg signed [`REG_WIDTH+6:0] data_o
        );
 
 parameter SHIFT = 4;
 
-reg signed [37:0] out;
+reg signed [`REG_WIDTH+6:0] out;
 
 always @(*) begin
     out = ((data_i >>> SHIFT) + data_i);

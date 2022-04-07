@@ -1,5 +1,6 @@
 `timescale 1ns/10ps
 
+`include "const.v"
 `include "control.v"
 `include "b_register.v"
 `include "x_register.v"
@@ -22,26 +23,26 @@ input   reset;
 input   in_en;
 output  out_valid;
 input   [15:0]  b_in;
-output signed [31:0]  x_out;
+output signed [`REG_WIDTH:0]  x_out;
 
 // reg & wire declarations
 wire [3:0]  count;
 wire signed [15:0]  b_o;
-wire signed [31:0]  xTarget_in;
-wire signed [31:0]  xTarget_o;
-wire signed [31:0]  x_o;
-wire signed [31:0]  xP1;
-wire signed [31:0]  xP2;
-wire signed [31:0]  xP3;
-wire signed [31:0]  xM1;
-wire signed [31:0]  xM2;
-wire signed [31:0]  xM3;
-wire signed [32:0]  data1;
-wire signed [32:0]  data2;
-wire signed [32:0]  data3;
-wire signed [37:0]  sum;
-wire signed [32:0]  x_new;
-wire signed [33:0]  x_sum;
+wire signed [`REG_WIDTH:0]  xTarget_in;
+wire signed [`REG_WIDTH:0]  xTarget_o;
+wire signed [`REG_WIDTH:0]  x_o;
+wire signed [`REG_WIDTH:0]  xP1;
+wire signed [`REG_WIDTH:0]  xP2;
+wire signed [`REG_WIDTH:0]  xP3;
+wire signed [`REG_WIDTH:0]  xM1;
+wire signed [`REG_WIDTH:0]  xM2;
+wire signed [`REG_WIDTH:0]  xM3;
+wire signed [`REG_WIDTH+1:0]  data1;
+wire signed [`REG_WIDTH+1:0]  data2;
+wire signed [`REG_WIDTH+1:0]  data3;
+wire signed [`REG_WIDTH+6:0]  sum;
+wire signed [`REG_WIDTH+1:0]  x_new;
+wire signed [`REG_WIDTH+2:0]  x_sum;
 
 // instances declarations
 control control(

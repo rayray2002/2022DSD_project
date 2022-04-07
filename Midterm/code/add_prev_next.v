@@ -4,27 +4,27 @@ module add_prev_next(
            input clk,
            input rst,
            input [3:0] count,
-           input signed [31:0] dataP1_i,
-           input signed [31:0] dataM1_i,
-           input signed [31:0] dataP2_i,
-           input signed [31:0] dataM2_i,
-           input signed [31:0] dataP3_i,
-           input signed [31:0] dataM3_i,
+           input signed [`REG_WIDTH:0] dataP1_i,
+           input signed [`REG_WIDTH:0] dataM1_i,
+           input signed [`REG_WIDTH:0] dataP2_i,
+           input signed [`REG_WIDTH:0] dataM2_i,
+           input signed [`REG_WIDTH:0] dataP3_i,
+           input signed [`REG_WIDTH:0] dataM3_i,
 
-           output reg signed [32:0] data1_o,
-           output reg signed [32:0] data2_o,
-           output reg signed [32:0] data3_o
+           output reg signed [`REG_WIDTH+1:0] data1_o,
+           output reg signed [`REG_WIDTH+1:0] data2_o,
+           output reg signed [`REG_WIDTH+1:0] data3_o
        );
 
-reg signed [31:0] dataP1;
-reg signed [31:0] dataM1;
-reg signed [31:0] dataP2;
-reg signed [31:0] dataM2;
-reg signed [31:0] dataP3;
-reg signed [31:0] dataM3;
-reg signed [32:0] data1;
-reg signed [32:0] data2;
-reg signed [32:0] data3;
+reg signed [`REG_WIDTH:0] dataP1;
+reg signed [`REG_WIDTH:0] dataM1;
+reg signed [`REG_WIDTH:0] dataP2;
+reg signed [`REG_WIDTH:0] dataM2;
+reg signed [`REG_WIDTH:0] dataP3;
+reg signed [`REG_WIDTH:0] dataM3;
+reg signed [`REG_WIDTH+1:0] data1;
+reg signed [`REG_WIDTH+1:0] data2;
+reg signed [`REG_WIDTH+1:0] data3;
 
 always @(*) begin
     dataP3 = (count[3] & count[2] & (count[1] | count[0])) ? 0 : dataP3_i;

@@ -6,15 +6,15 @@
 module divide20(
            input clk,
            input rst,
-           input signed [37:0] data_i,
-           output signed [32:0] data_o
+           input signed [`REG_WIDTH+6:0] data_i,
+           output signed [`REG_WIDTH+1:0] data_o
        );
 
 // wire signed [31:0] big_in;
-wire signed [37:0] shift4;
-wire signed [37:0] shift8;
-wire signed [37:0] shift16;
-wire signed [38:0] shift1;
+wire signed [`REG_WIDTH+6:0] shift4;
+wire signed [`REG_WIDTH+6:0] shift8;
+wire signed [`REG_WIDTH+6:0] shift16;
+wire signed [`REG_WIDTH+7:0] shift1;
 
 assign data_o = (shift1 >>> 6);
 

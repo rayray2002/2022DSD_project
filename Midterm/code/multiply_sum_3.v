@@ -1,15 +1,16 @@
 // `include "pipeline_reg.v"
+`include "const.v"
 
 module multiply_sum_3(
            input clk,
            input rst,
-           input signed [36:0] multiply13_i,
-           input signed [35:0] minus_i,
+           input signed [`REG_WIDTH+5:0] multiply13_i,
+           input signed [`REG_WIDTH+4:0] minus_i,
 
-           output reg signed [37:0] sum_o
+           output reg signed [`REG_WIDTH+6:0] sum_o
        );
 
-reg signed [37:0] sum;
+reg signed [`REG_WIDTH+6:0] sum;
 
 
 always @(*) begin

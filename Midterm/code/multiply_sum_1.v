@@ -1,29 +1,30 @@
 // `include "pipeline_reg.v"
+`include "const.v"
 
 module multiply_sum_1(
            input clk,
            input rst,
            input signed [15:0] b_i,
-           input signed [32:0] data1_i,
-           input signed [32:0] data2_i,
-           input signed [32:0] data3_i,
+           input signed [`REG_WIDTH+1:0] data1_i,
+           input signed [`REG_WIDTH+1:0] data2_i,
+           input signed [`REG_WIDTH+1:0] data3_i,
 
-           output reg signed [35:0] shift2_add_o,
-           output reg signed [34:0] shift2_o,
-           output reg signed [32:0] add_b_o,
-           output reg signed [35:0] multiply6_o
+           output reg signed [`REG_WIDTH+4:0] shift2_add_o,
+           output reg signed [`REG_WIDTH+3:0] shift2_o,
+           output reg signed [`REG_WIDTH+1:0] add_b_o,
+           output reg signed [`REG_WIDTH+4:0] multiply6_o
        );
 
-reg signed [35:0] shift2_add;
-reg signed [34:0] shift2;
-reg signed [32:0] add_b;
-reg signed [35:0] multiply6;
+reg signed [`REG_WIDTH+4:0] shift2_add;
+reg signed [`REG_WIDTH+3:0] shift2;
+reg signed [`REG_WIDTH+1:0] add_b;
+reg signed [`REG_WIDTH+4:0] multiply6;
 
 always @(*) begin
     shift2 = data1_i << 2;
     shift2_add = data1_i + shift2;
 
-    add_b = data3_i + (b_i<<16);
+    add_b = data3_i + (b_i<<(`REG_WIDTH-15));
 
     multiply6 = (data2_i<<1) + (data2_i<<2);
 end

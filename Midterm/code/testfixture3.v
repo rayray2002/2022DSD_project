@@ -1,5 +1,5 @@
 `timescale 1ns/10ps
-`define CYCLE    10           	         // Modify your clock period here
+`include "const.v"
 `define SDFFILE  "./GSIM_syn.sdf"	      // Modify your sdf file name
 `define PAT      "./pattern3.dat"    
 `define DEL      1

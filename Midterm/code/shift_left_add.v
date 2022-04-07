@@ -1,14 +1,16 @@
+`include "const.v"
+
 module shift_left_add (
            input clk,
            input rst,
-           input signed [37:0] data_i,
-           output reg signed [38:0] data_o
+           input signed [`REG_WIDTH+6:0] data_i,
+           output reg signed [`REG_WIDTH+7:0] data_o
        );
 
 parameter SHIFT = 1;
 
-reg signed [37:0] out;
-wire signed [38:0] shifted;
+reg signed [`REG_WIDTH+6:0] out;
+wire signed [`REG_WIDTH+7:0] shifted;
 
 assign shifted = data_i << SHIFT;
 
