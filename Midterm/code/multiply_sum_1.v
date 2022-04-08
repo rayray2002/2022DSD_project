@@ -30,6 +30,7 @@ always @(*) begin
 end
 
 always @(posedge clk) begin
+// always @(*) begin
     if (rst) begin
         shift2_add_o <= 0;
         shift2_o <= 0;
@@ -43,33 +44,5 @@ always @(posedge clk) begin
         multiply6_o <= multiply6;
     end
 end
-
-// pipeline_reg D1(
-//                  clk,
-//                  rst,
-//                  shift2_add,
-//                  shift2_add_o
-//              );
-
-// pipeline_reg D2(
-//                  clk,
-//                  rst,
-//                  shift2,
-//                  shift2_o
-//              );
-
-// pipeline_reg D3(
-//                  clk,
-//                  rst,
-//                  add_b,
-//                  add_b_o
-//              );
-
-// pipeline_reg D4(
-//                  clk,
-//                  rst,
-//                  multiply6,
-//                  multiply6_o
-//              );
 
 endmodule

@@ -1,7 +1,6 @@
 // `include "pipeline_reg.v"
 `include "const.v"
 
-
 module x_register (
            input clk,
            input rst,
@@ -18,12 +17,12 @@ module x_register (
            output signed [`REG_WIDTH:0] data_o
        );
 
-// parameters
-parameter TARGET = 7;
+parameter PREV = (`TARGET-`STEP>=0) ? `TARGET-`STEP : `TARGET-`STEP+16;
 
 // wire & reg declarations
 reg signed [`REG_WIDTH:0] registers [0:15];
 integer i;
+integer tmp;
 
 // combinational logic
 
@@ -31,18 +30,18 @@ integer i;
 always @(posedge clk) begin
     if (rst)
         for (i = 0; i < 16; i = i + 1) begin
-            // registers[i] <= (400*(i+1))<<16;
-            registers[i] <= 32'b0;
+            registers[i] <= 0;
         end
     else begin
-        registers[TARGET-1] <= dataTarget_i;
+        registers[PREV] <= dataTarget_i;
 
         // rotate registers
-        for (i = 0; i < 15; i = i + 1) begin
-            if (i != TARGET-1)
-                registers[i] <= registers[i+1];
+        for (i = 0; i < 16; i = i + 1) begin
+            if (i != PREV) begin
+                tmp = (i+`STEP)%16;
+                registers[i] <= registers[tmp];
+            end
         end
-        registers[15] <= registers[0];
     end
 end
 
@@ -66,7 +65,7 @@ always @(posedge clk) begin
 end
 
 // assign
-assign dataTarget_o = registers[TARGET];
+assign dataTarget_o = registers[`TARGET];
 assign data_o = registers[15][`REG_WIDTH:`REG_WIDTH-31];
 
 endmodule

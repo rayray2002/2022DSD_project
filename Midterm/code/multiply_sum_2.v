@@ -13,23 +13,24 @@ module multiply_sum_2(
            output reg signed [`REG_WIDTH+4:0] minus_o
        );
 
-reg signed [`REG_WIDTH+5:0] multiply13;
-reg signed [`REG_WIDTH+4:0] minus;
+// reg signed [`REG_WIDTH+5:0] multiply13;
+// reg signed [`REG_WIDTH+4:0] minus;
 
 always @(*) begin
-    multiply13 = shift2_add_i + (shift2_i<<1);
-    minus = add_b_i - multiply6_i;
+    multiply13_o = shift2_add_i + (shift2_i<<1);
+    minus_o = add_b_i - multiply6_i;
 end
 
-always @(posedge clk) begin
-    if (rst) begin
-        multiply13_o <= 0;
-        minus_o <= 0;
-    end
-    else begin
-        multiply13_o <= multiply13;
-        minus_o <= minus;
-    end
-end
+// always @(*) begin
+// // always @(posedge clk) begin
+//     if (rst) begin
+//         multiply13_o <= 0;
+//         minus_o <= 0;
+//     end
+//     else begin
+//         multiply13_o <= multiply13;
+//         minus_o <= minus;
+//     end
+// end
 
 endmodule

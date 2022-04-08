@@ -52,6 +52,7 @@ control control(
             out_valid,
             count
         );
+        
 b_register b_register(
                clk,
                in_en,

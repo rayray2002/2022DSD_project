@@ -1,14 +1,16 @@
+`include "const.v"
+
 module b_register (
            input clk,
            input wen,
            input rst,
-           input signed [15: 0] b_i,
+           input signed [15:0] b_i,
            output signed [15:0] b_o
        );
 
 // wire & reg declarations
 reg signed [15:0] registers [0:15];
-integer i;
+integer i, tmp;
 
 // combinational logic
 
@@ -22,17 +24,17 @@ always @(posedge clk) begin
         if (wen)
             registers[0] <= b_i;
         else
-            registers[0] <= registers[1];
+            registers[0] <= registers[`STEP];
 
         // rotate registers
-        for (i = 1; i < 15; i = i + 1) begin
-            registers[i] <= registers[i+1];
+        for (i = 1; i < 16; i = i + 1) begin
+            tmp = (i+`STEP)%16;
+            registers[i] <= registers[tmp];
         end
-        registers[15] <= registers[0];
     end
 end
 
 // assign
-assign b_o = registers[15];
+assign b_o = registers[0];
 
 endmodule
