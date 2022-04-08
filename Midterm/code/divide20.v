@@ -14,9 +14,9 @@ module divide20(
 wire signed [`REG_WIDTH+6:0] shift4;
 wire signed [`REG_WIDTH+6:0] shift8;
 wire signed [`REG_WIDTH+6:0] shift16;
-wire signed [`REG_WIDTH+7:0] shift1;
+// wire signed [`REG_WIDTH+7:0] shift1;
 
-assign data_o = (shift1 >>> 6);
+// assign data_o = (shift1 >>> 6);
 
 shift_right_4_add shift4_add (
                     .clk(clk),
@@ -49,7 +49,7 @@ shift_left_add shift1_add(
                    .clk(clk),
                    .rst(rst),
                    .data_i(shift16),
-                   .data_o(shift1)
+                   .data_o(data_o)
                );
 // defparam shift1_add.SHIFT = 1;
 

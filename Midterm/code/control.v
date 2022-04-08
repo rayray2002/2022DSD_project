@@ -6,7 +6,7 @@ module control(
            output [3:0] count_o
        );
 
-parameter ITERATIONS = 13;
+parameter ITERATIONS = 12;
 
 reg signed [ITERATIONS:0] count;
 
@@ -21,6 +21,6 @@ always @(posedge clk) begin
     end
 end
 
-assign out_valid = ~count[ITERATIONS] & count[ITERATIONS-1];
+assign out_valid = ~count[ITERATIONS] & count[ITERATIONS-1] & count[ITERATIONS-2] & count[ITERATIONS-3];
 
 endmodule

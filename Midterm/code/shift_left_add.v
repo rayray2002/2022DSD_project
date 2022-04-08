@@ -4,7 +4,7 @@ module shift_left_add (
            input clk,
            input rst,
            input signed [`REG_WIDTH+6:0] data_i,
-           output reg signed [`REG_WIDTH+7:0] data_o
+           output reg signed [`REG_WIDTH+1:0] data_o
        );
 
 parameter SHIFT = 1;
@@ -22,7 +22,7 @@ always @(posedge clk) begin
     if (rst) begin
         data_o <= 0;
     end else begin
-        data_o <= out;
+        data_o <= (out >>> 6);
     end
 end
 
