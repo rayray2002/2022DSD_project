@@ -6,6 +6,7 @@ AT: 3.7e9
 Contribution:
     Details can be found on GitHub: https://github.com/rayray2002/2022DSD_project
     B09901171 黃柏睿:
+        All of the code in my submission
         Algorithm Optimization
         Architecture Design
         Trial and Error
@@ -15,6 +16,7 @@ Contribution:
     B09502xxx 徐明晧:
         Improve performance from the version of Commit 778ab1f43b2f1f89920c56f659234fa3ef85e117 to his NTUCOOL submission.
         (Code state at the commit: https://github.com/rayray2002/2022DSD_project/tree/778ab1f43b2f1f89920c56f659234fa3ef85e117)
+        (Performance at that point: B Rank, area: 88122.218833, runtime: 16532ns, AT: 7.28e9)
         (No Commit History to clarify his contribution)
 
 Simulation Results:
