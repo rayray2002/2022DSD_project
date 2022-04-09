@@ -1,0 +1,100 @@
+Area: 104252.609845
+Score: A Rank
+Run Time: 7243.5 ns
+AT: 3.7e9
+
+Contribution:
+    Details can be found on GitHub: https://github.com/rayray2002/2022DSD_project
+    B09901171 黃柏睿:
+        Algorithm Optimization
+        Architecture Design
+        Trial and Error
+        Debugging
+        Precision Improvement
+
+    B09502xxx 徐明晧:
+        Improve performance from the version of Commit 778ab1f43b2f1f89920c56f659234fa3ef85e117 to his NTUCOOL submission.
+        (Code state at the commit: https://github.com/rayray2002/2022DSD_project/tree/778ab1f43b2f1f89920c56f659234fa3ef85e117)
+        (No Commit History to clarify his contribution)
+
+Simulation Results:
+
+Your Score Level: A 
+Your Score Level: A 
+Your Score Level: A 
+Your Score Level: A 
+Your Score Level: A 
+Simulation complete via $finish(1) at time 7243500 PS + 0
+Simulation complete via $finish(1) at time 7243500 PS + 0
+Simulation complete via $finish(1) at time 7243500 PS + 0
+Simulation complete via $finish(1) at time 7243500 PS + 0
+Simulation complete via $finish(1) at time 7243500 PS + 0
+
+report_area -hierarchy   :
+ 
+****************************************
+Report : area
+Design : GSIM
+Version: R-2020.09-SP5
+Date   : Sat Apr  9 05:54:25 2022
+****************************************
+
+Library(s) Used:
+
+    slow (File: /home/raid7_2/course/cvsd/CBDK_IC_Contest/CIC/SynopsysDC/db/slow.db)
+
+Number of ports:                         3219
+Number of nets:                         10791
+Number of cells:                         7531
+Number of combinational cells:           6465
+Number of sequential cells:              1016
+Number of macros/black boxes:               0
+Number of buf/inv:                       1809
+Number of references:                       7
+
+Combinational area:              74763.680029
+Buf/Inv area:                    12246.740940
+Noncombinational area:           29488.929815
+Macro/Black Box area:                0.000000
+Net Interconnect area:          822457.537567
+
+Total cell area:                104252.609845
+Total area:                     926710.147412
+
+Hierarchical area distribution
+------------------------------
+
+                                  Global cell area             Local cell area
+                                  --------------------  ------------------------------ 
+Hierarchical cell                 Absolute     Percent  Combi-      Noncombi-   Black-
+                                  Total        Total    national    national    boxes   Design
+--------------------------------  -----------  -------  ----------  ----------  ------  -----------------------------
+GSIM                              104252.6098    100.0     16.9740      0.0000  0.0000  GSIM
+b_register                         11009.3362     10.6   4056.7859   6952.5503  0.0000  b_register
+control                              964.1232      0.9    334.3878    427.7448  0.0000  control
+control/add_22                       201.9906      0.2    201.9906      0.0000  0.0000  control_DW01_inc_0
+stage1                             13772.7036     13.2   2235.4758      0.0000  0.0000  add_prev_next
+stage1/add_42                       4153.5378      4.0   4153.5378      0.0000  0.0000  add_prev_next_DW01_add_4
+stage1/add_43                       3825.9396      3.7   3825.9396      0.0000  0.0000  add_prev_next_DW01_add_8
+stage1/add_44                       3557.7504      3.4   3557.7504      0.0000  0.0000  add_prev_next_DW01_add_3
+stage234                           29660.3674     28.5    100.1466      0.0000  0.0000  multiply_sum
+stage234/multiply_sum_1            14685.9046     14.1   2361.0834   5119.3583  0.0000  multiply_sum_1
+stage234/multiply_sum_1/add_25      3741.0696      3.6   3741.0696      0.0000  0.0000  multiply_sum_1_DW01_add_3
+stage234/multiply_sum_1/add_29      3464.3934      3.3   3464.3934      0.0000  0.0000  multiply_sum_1_DW01_add_4
+stage234/multiply_sum_2             9344.1869      9.0      0.0000      0.0000  0.0000  multiply_sum_2
+stage234/multiply_sum_2/add_20      4365.7128      4.2   4365.7128      0.0000  0.0000  multiply_sum_2_DW01_add_1
+stage234/multiply_sum_2/sub_21      4978.4742      4.8   4978.4742      0.0000  0.0000  multiply_sum_2_DW01_sub_1
+stage234/multiply_sum_3             5530.1292      5.3      0.0000      0.0000  0.0000  multiply_sum_3
+stage234/multiply_sum_3/add_17      5530.1292      5.3   5530.1292      0.0000  0.0000  multiply_sum_3_DW01_add_1
+stage5678                          24676.8011     23.7    139.1868      0.0000  0.0000  divide20
+stage5678/shift16_add               6013.8882      5.8    390.4020      0.0000  0.0000  shift_right_16_add
+stage5678/shift16_add/add_15        5623.4862      5.4   5623.4862      0.0000  0.0000  shift_right_16_add_DW01_add_1
+stage5678/shift1_add                6478.9758      6.2    322.5060   1356.2226  0.0000  shift_left_add
+stage5678/shift1_add/add_18         4800.2472      4.6   4800.2472      0.0000  0.0000  shift_left_add_DW01_add_1
+stage5678/shift4_add                6859.1933      6.6    471.8772   1588.7663  0.0000  shift_right_4_add
+stage5678/shift4_add/add_15         4798.5498      4.6   4798.5498      0.0000  0.0000  shift_right_4_add_DW01_add_1
+stage5678/shift8_add                5185.5570      5.0    115.4232      0.0000  0.0000  shift_right_8_add
+stage5678/shift8_add/add_15         5070.1338      4.9   5070.1338      0.0000  0.0000  shift_right_8_add_DW01_add_1
+x_register                         24152.3044     23.2  10108.0169  14044.2875  0.0000  x_register
+--------------------------------  -----------  -------  ----------  ----------  ------  -----------------------------
+Total                                                   74763.6800  29488.9298  0.0000

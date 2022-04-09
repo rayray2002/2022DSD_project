@@ -2,9 +2,9 @@
 `define _CONST
 
     `define REG_WIDTH 32
-    `define CYCLE 4
-    `define ITERATIONS 13
-    `define TARGET 11
-    `define STEP 1
+    `define CYCLE 5.5
+    `define ITERATIONS 11
+    `define TARGET 4
+    `define STEP 4
 
 `endif

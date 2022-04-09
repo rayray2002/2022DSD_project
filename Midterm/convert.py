@@ -8,4 +8,4 @@ def twos_complement(hexstr, bits=16):
     return value
 
 
-print(twos_complement(sys.argv[1], 32) / 2**16)
+print(twos_complement(sys.argv[1], 33) / 2**17)

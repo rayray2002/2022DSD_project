@@ -9,19 +9,19 @@ module shift_right_4_add (
 
 parameter SHIFT = 4;
 
-// reg signed [`REG_WIDTH+6:0] out;
+reg signed [`REG_WIDTH+6:0] out;
 
 always @(*) begin
-    data_o = ((data_i >>> SHIFT) + data_i);
+    out = ((data_i >>> SHIFT) + data_i);
 end
 
 // always @(*) begin
-// // always @(posedge clk) begin
-//     if (rst) begin
-//         data_o <= 0;
-//     end else begin
-//         data_o <= out;
-//     end
-// end
+always @(posedge clk) begin
+    if (rst) begin
+        data_o <= 0;
+    end else begin
+        data_o <= out;
+    end
+end
 
 endmodule

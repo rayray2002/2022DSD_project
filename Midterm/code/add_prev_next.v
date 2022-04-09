@@ -27,13 +27,13 @@ reg signed [`REG_WIDTH:0] dataM3;
 // reg signed [`REG_WIDTH+1:0] data3;
 
 always @(*) begin
-    dataP3 = (count[3] & count[2] & (count[1] | count[0])) ? 0 : dataP3_i;
-    dataP2 = (count[3] & count[2] & count[1]) ? 0 : dataP2_i;
+    dataP3 = (count[0] & count[1] & (count[2] | count[3])) ? 0 : dataP3_i;
+    dataP2 = (count[0] & count[1] & count[3]) ? 0 : dataP2_i;
     dataP1 = (count[3] & count[2] & count[1] & count[0]) ? 0 : dataP1_i;
 
-    dataM3 = ~count[3] & ~count[2] & ~(count[1] & count[0]) ? 0 : dataM3_i;
-    dataM2 = ~count[3] & ~count[2] & ~count[1] ? 0 : dataM2_i;
-    dataM1 = ~count[3] & ~count[2] & ~count[1] & ~count[0] ? 0 : dataM1_i;
+    dataM3 = ~count[0] & ~count[1] & ~(count[2] & count[3]) ? 0 : dataM3_i;
+    dataM2 = ~count[0] & ~count[1] & ~count[3] ? 0 : dataM2_i;
+    dataM1 = (~count[3] & ~count[2] & ~count[1] & ~count[0]) ? 0 : dataM1_i;
 
     // data1 = dataP1 + dataM1;
     // data2 = dataP2 + dataM2;

@@ -10,26 +10,11 @@ module multiply_sum_3(
            output reg signed [`REG_WIDTH+6:0] sum_o
        );
 
-reg signed [`REG_WIDTH+6:0] sum;
+// reg signed [`REG_WIDTH+6:0] sum;
 
 
 always @(*) begin
-    sum = multiply13_i + minus_i;
+    sum_o = multiply13_i + minus_i;
 end
-
-always @(posedge clk) begin
-    if (rst) begin
-        sum_o <= 0;
-    end else begin
-        sum_o <= sum;
-    end
-end
-
-// pipeline_reg D1(
-//                  clk,
-//                  rst,
-//                  sum,
-//                  sum_o
-//              );
 
 endmodule

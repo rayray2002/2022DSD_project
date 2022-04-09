@@ -26,10 +26,11 @@ input   [15:0]  b_in;
 output signed [`REG_WIDTH:0]  x_out;
 
 // reg & wire declarations
+wire count4;
 wire [3:0]  count;
 wire signed [15:0]  b_o;
-wire signed [`REG_WIDTH:0]  xTarget_in;
-wire signed [`REG_WIDTH:0]  xTarget_o;
+// wire signed [`REG_WIDTH:0]  xTarget_in;
+// wire signed [`REG_WIDTH:0]  xTarget_o;
 wire signed [`REG_WIDTH:0]  x_o;
 wire signed [`REG_WIDTH:0]  xP1;
 wire signed [`REG_WIDTH:0]  xP2;
@@ -51,12 +52,14 @@ control control(
             in_en,
             out_valid,
             count
+            // count4
         );
         
 b_register b_register(
                clk,
                in_en,
                reset,
+               count,
                b_in,
                b_o
            );
@@ -64,8 +67,10 @@ b_register b_register(
 x_register x_register(
                clk,
                in_en,
-               xTarget_in,
-               xTarget_o,
+               count,
+               out_valid,
+               x_new[`REG_WIDTH:0],
+            //    xTarget_o,
                xP1,
                xM1,
                xP2,
@@ -107,9 +112,10 @@ divide20 stage5678(
              x_new
          );
 
-assign x_sum = x_new + xTarget_o;
-assign xTarget_in = x_sum >>> 1;
-// assign xTarget_in = x_new*0.5 + xTarget_o*0.5;
+// assign x_sum = x_new + xTarget_o;
+// assign xTarget_in = x_sum >>> 1;
+// assign xTarget_in = x_new;
+// assign xTarget_in = x_new*1 + xTarget_o*0.0;
 // assign xTarget_in = (x_new + xTarget_o)>>>1;
 assign x_out = x_o;
 
