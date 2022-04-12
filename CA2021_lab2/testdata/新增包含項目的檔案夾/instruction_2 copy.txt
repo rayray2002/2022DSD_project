@@ -1,0 +1,7 @@
+// read hit, load-use hazard, write hit
+// load/store to the blocks with different index
+
+// index=0x00, tag=0x00
+000000000000_00000_010_01111_0000011  // lw x15,0x0(x0)
+0100000_01000_01111_101_01111_0010011 // srai x15, x15, 8
+0000000_01111_00000_010_00000_0100011 // sw x15, 0x0(x0)
