@@ -2,7 +2,7 @@
 `define TestPort    30'hFF
 `define BeginSymbol 32'h00000168
 `define EndSymbol   32'hFFFFFD5D
-`define CheckNum    7'd33
+`define CheckNum    7'd11
 
 module	TestBed(
 	clk,
@@ -67,7 +67,7 @@ module	TestBed(
 		end
 	end
 			
-	always@(*)	// FSM for test
+	always@(negedge clk)	// FSM for test
 	begin
 		finish = 1'b0;
 		case( curstate )
@@ -89,8 +89,10 @@ module	TestBed(
 							if( addr==`TestPort && wen && state==0 )
 							begin
 								nxtaddr = curaddr + 1;
-								if( data_modify != answer )
+								if( data_modify != answer ) begin
+									$display( "Error: %d, %h, %h", curaddr, data_modify, answer );
 									nxt_error_num = error_num + 8'd1;
+								end
 							end
 							nxtstate = curstate;
 							if( curaddr==`CheckNum )	
@@ -150,34 +152,12 @@ module	TestBed(
 		7'd2   : answer = 32'd1     ;
 		7'd3   : answer = 32'd2     ;
 		7'd4   : answer = 32'd3     ;
-		7'd5   : answer = 32'd5     ;
-		7'd6   : answer = 32'd8     ;
-		7'd7   : answer = 32'd13    ;
-		7'd8   : answer = 32'd21    ;
-		7'd9   : answer = 32'd34    ;
-		7'd10  : answer = 32'd55    ;
-		7'd11  : answer = 32'd89    ;
-		7'd12  : answer = 32'd144   ;
-		7'd13  : answer = 32'd233   ;
-		7'd14  : answer = 32'd377   ;
-		7'd15  : answer = 32'd610   ;
-		7'd16  : answer = 32'd610   ;
-		7'd17  : answer = 32'd377   ;
-		7'd18  : answer = 32'd233   ;
-		7'd19  : answer = 32'd144   ;
-		7'd20  : answer = 32'd89    ;
-		7'd21  : answer = 32'd55    ;
-		7'd22  : answer = 32'd34    ;
-		7'd23  : answer = 32'd21    ;
-		7'd24  : answer = 32'd13    ;
-		7'd25  : answer = 32'd8     ;
-		7'd26  : answer = 32'd5     ;
-		7'd27  : answer = 32'd3     ;
-		7'd28  : answer = 32'd2     ;
-		7'd29  : answer = 32'd1     ;
-		7'd30  : answer = 32'd1     ;
-		7'd31  : answer = 32'd0     ;
-		7'd32  : answer = `EndSymbol;
+		7'd5   : answer = 32'd3     ;
+		7'd6   : answer = 32'd2     ;
+		7'd7   : answer = 32'd1     ;
+		7'd8   : answer = 32'd1     ;
+		7'd9   : answer = 32'd0     ;
+		7'd10  : answer = `EndSymbol;
 		endcase
 	end
 endmodule

@@ -40,10 +40,10 @@ module MEM_WB(
         end
         else
         begin
-            ctrl_o <= ctrl_i;
-            ALUResult_o <= ALUResult_i;
-            MemData_o <= MemData_i;
-            RDaddr_o <= RDaddr_i;
+            ctrl_o <= ctrl_o;
+            ALUResult_o <= ALUResult_o;
+            MemData_o <= MemData_o;
+            RDaddr_o <= RDaddr_o;
         end
     end
 

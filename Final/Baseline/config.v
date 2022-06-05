@@ -1,4 +1,3 @@
-`include "MUX32.v"
 `include "Adder.v"
 `include "PC.v"
 `include "IF_ID.v"
@@ -15,3 +14,4 @@
 `include "EX_MEM.v"
 `include "MEM_WB.v"
 `include "PC_Control.v"
+`include "Compare.v"

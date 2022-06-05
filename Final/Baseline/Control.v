@@ -109,7 +109,7 @@ always @(*) begin
             7'b1101111: begin
                 jalr_o = 0;
                 jal_o = 1;
-                branch_o = 1;
+                branch_o = 0;
                 MemRead_o = 0;
                 MemtoReg_o = 0;
                 // ALUOp_o = 2'b00;
@@ -122,7 +122,7 @@ always @(*) begin
             7'b1100111: begin
                 jalr_o = 1;
                 jal_o = 0;
-                branch_o = 1;
+                branch_o = 0;
                 MemRead_o = 0;
                 MemtoReg_o = 0;
                 // ALUOp_o = 2'b00;

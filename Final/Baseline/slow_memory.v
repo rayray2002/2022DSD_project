@@ -13,7 +13,7 @@ module slow_memory(
     
     parameter MEM_NUM = 1024;
     parameter MEM_WIDTH = 128;
-    parameter LATENCY = 45;  // negedge clock after [Unconditional carry(15ns/CYCLE)+1] cycle
+    parameter LATENCY = 3;  // negedge clock after [Unconditional carry(15ns/CYCLE)+1] cycle
         
     parameter IDLE = 2'd0; 
     parameter WAIT = 2'd1; 

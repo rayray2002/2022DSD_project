@@ -28,8 +28,8 @@ reg signed [31:0]      register        [0:31];
 integer i;
 
 // Read Data      
-assign  RS1data_o = register[RS1addr_i];
-assign  RS2data_o = register[RS2addr_i];
+assign  RS1data_o = (RS1addr_i == RDaddr_i && RegWrite_i && RS1addr_i != 0)? RDdata_i : register[RS1addr_i];
+assign  RS2data_o = (RS2addr_i == RDaddr_i && RegWrite_i && RS2addr_i != 0)? RDdata_i : register[RS2addr_i];
 
 // Write Data   
 always @(posedge clk) begin

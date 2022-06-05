@@ -1,39 +1,30 @@
 module PC_Control(
-    jal_i,
-    jalr_i,
-    branch_i,
-    zero_i,
-    imm_i,
-    ALU_Result,
-    PC_i,
-    PC_o,
-    RD_o
+    input [31:0] imm_ext,
+    input [31:0] PC_i,
+    // input [31:0] PC_ID,
+    input [31:0] PC_imm,
+    input [31:0] PC_jalr,
+    input jal_i,
+    input jalr_i,
+    input branch,
+    input miss,
+
+    output [31:0] PC_o,
+    output [31:0] PC_plus_o
+    // output [31:0] PC_imm_o
 );
 
-input jal_i;
-input jalr_i;
-input branch_i;
-input zero_i;
-input [31:0] imm_i;
-input [31:0] ALU_Result;
-input [31:0] PC_i;
-output reg [31:0] PC_o;
-output reg [31:0] RD_o;
+wire [31:0] PC_nxt;
+wire [31:0] PC_1;
+wire [31:0] PC_2;
+wire [31:0] PC_3;
 
-reg [31:0] PC_add;
+assign PC_plus_o = PC_i + 4;
+// assign PC_imm_o = PC_i + imm_ext;
 
-always @(*) begin
-    // PC_add = PC_i + 4;
-    PC_add = {PC_i[31:2] + 1'b1, PC_i[1:0]};
-    RD_o = PC_add;
-
-    PC_o = PC_add;
-    if (jalr_i)
-        PC_o = ALU_Result;
-    else if ((branch_i & zero_i) | jal_i)
-        PC_o = imm_i + PC_i;
-    else
-        PC_o = PC_add;
-end
+assign PC_1 = (jal_i|branch) ? PC_imm : PC_plus_o;
+// assign PC_2 = branch ? PC_imm : PC_plus_o;
+// assign PC_2 = miss ? PC_ID : PC_1;
+assign PC_o = jalr_i ? PC_jalr : PC_1;
 
 endmodule

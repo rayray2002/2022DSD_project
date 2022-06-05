@@ -36,9 +36,6 @@ always @(*) begin
         6'b1_101_10: ALUCtrl_o = `SRA;
         default: ALUCtrl_o = `ADD;
     endcase
-    // ALUCtrl_o[0] = ALUOp_i[1] & funct3_i[2] & funct3_i[1]&(~funct3_i[0]);
-    // ALUCtrl_o[1] = ~(ALUOp_i[1] & (~ALUOp_i[0]) & funct3_i[1]);
-    // ALUCtrl_o[2] = ((~ALUOp_i[1]) & (~funct3_i[1])) | (funct7_5_i & ALUOp_i[1]);
-    // ALUCtrl_o[3] = ALUOp_i[1] & (~funct3_i[2]) & funct3_i[1];
-end 
+end
+
 endmodule
