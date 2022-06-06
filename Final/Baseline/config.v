@@ -3,6 +3,7 @@
 `include "IF_ID.v"
 `include "Registers.v"
 `include "Imm_Gen.v"
+`include "Jump_Imm_Gen.v"
 `include "Control.v"
 `include "Zero.v"
 `include "Hazard_Detection.v"

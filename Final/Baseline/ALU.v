@@ -45,6 +45,7 @@ always @(*) begin
         `OR: data_o = data1_i | data2_i;
         `XOR: data_o = data1_i ^ data2_i;
         `SLT: data_o = overflow;
+        // `SLT: data_o = data1_i < data2_i;
     
         `SLL: data_o = data1_i << data2_i[4:0];
         `SRL: data_o = data1_i >> data2_i[4:0];

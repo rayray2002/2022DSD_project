@@ -2,7 +2,7 @@
 6F_00_40_0B // 0_0001011010_0_00000000_00000_1101111   //0x04// jal  x0  0x0005A (to 0xB8) 
 23_2E_80_3E // 0011111_01000_00000_010_11100_0100011   //0x08// sw   x8  x0  0x3FC           // OutputTestPort
 67_80_00_00 // 000000000000_00001_000_00000_1100111    //0x0C// jalr x0  x1  0x000           // return OutputTestPort
-93_05_50_00 // 000000000101_00000_000_01011_0010011    //0x10// addi x11 x0  0x005           // FibonacciSeries
+93_05_00_01 // 000000010000_00000_000_01011_0010011    //0x10// addi x11 x0  0x010           // FibonacciSeries
 93_04_00_00 // 000000000000_00000_000_01001_0010011    //0x14// addi x9  x0  0x000
 13_05_10_00 // 000000000001_00000_000_01010_0010011    //0x18// addi x10 x0  0x001
 93_07_00_00 // 000000000000_00000_000_01111_0010011    //0x1C// addi x15 x0  0x000
@@ -23,7 +23,7 @@ EF_F0_5F_FB // 1_1111011010_1_11111111_00001_1101111   //0x54// jal  x1  0xFFFDA
 13_06_16_00 // 000000000001_01100_000_01100_0010011    //0x58// addi x12 x12 0x001
 E3_12_B6_FE // 1_111111_01011_01100_001_0010_1_1100011 //0x5C// bne  x12 x11 0xFF2 (to 0x40) // to FibonacciLoop
 67_00_01_00 // 000000000000_00010_000_00000_1100111    //0x60// jalr x0  x2  0x000           // return FibonacciSeries
-93_04_00_01 // 000000010000_00000_000_01001_0010011    //0x64// addi x9  x0  0x010           // BubbleSort
+93_04_C0_03 // 000000111100_00000_000_01001_0010011    //0x64// addi x9  x0  0x03C           // BubbleSort
 13_05_00_00 // 000000000000_00000_000_01010_0010011    //0x68// addi x10 x0  0x000
 33_86_A4_40 // 0100000_01010_01001_000_01100_0110011   //0x6C// sub  x12 x9  x10             // BubbleOutLoop
 93_05_00_00 // 000000000000_00000_000_01011_0010011    //0x70// addi x11 x0  0x000
@@ -37,7 +37,7 @@ B3_A7_E6_00 // 0000000_01110_01101_010_01111_0110011   //0x7C// slt  x15 x13 x14
 E3_92_C5_FE // 1_111111_01100_01011_001_0010_1_1100011 //0x90// bne  x11 x12 0xFF2 (to 0x74) // to BubbleInLoop
 13_05_45_00 // 000000000100_01010_000_01010_0010011    //0x94// addi x10 x10 0x004
 E3_1A_95_FC // 1_111110_01001_01010_001_1010_1_1100011 //0x98// bne  x10 x9  0xFEA (to 0x6C) // to BubbleOutLoop
-93_04_40_01 // 000000010100_00000_000_01001_0010011    //0x9C// addi x9  x0  0x014
+93_04_00_04 // 000001000000_00000_000_01001_0010011    //0x9C// addi x9  x0  0x040
 13_05_00_00 // 000000000000_00000_000_01010_0010011    //0xA0// addi x10 x0  0x000
 03_24_05_00 // 000000000000_01010_010_01000_0000011    //0xA4// lw   x8  x10 0x000           // BubbleOutput
 EF_F0_1F_F6 // 1_1110110000_1_11111111_00001_1101111   //0xA8// jal  x1  0xFFFB0 (to 0x08)   // to OutputTestPort
@@ -62,7 +62,7 @@ EF_F0_5F_F3 // 1_1110011010_1_11111111_00001_1101111   //0xD4// jal  0xFFF9A (to
 //    0x04     //                  jal  x0  Main
 //    0x08     // OutputTestPort : sw   x8  x0  0x040
 //    0x0C     //                  jalr x0  x1  0x000           // return OutputTestPort
-//    0x10     // FibonacciSeries: addi x11 x0  0x005           // number = 5
+//    0x10     // FibonacciSeries: addi x11 x0  0x010           // number = 16
 //    0x14     //                  addi x9  x0  0x000           // f(0) = 0
 //    0x18     //                  addi x10 x0  0x001           // f(1) = 1
 //    0x1C     //                  addi x15 x0  0x000           // 0x0000 stores f(0)
@@ -83,7 +83,7 @@ EF_F0_5F_F3 // 1_1110011010_1_11111111_00001_1101111   //0xD4// jal  0xFFF9A (to
 //    0x58     //                  addi x12 x12 0x001           // i = i+1
 //    0x5C     //                  bne  x12 x11 FibonacciLoop   // continue FibonacciLoop
 //    0x60     //                  jalr x0  x2  0x000           // return FibonacciSeries
-//    0x64     // BubbleSort     : addi x9  x0  0x010           // x9  = 4*(number-1)
+//    0x64     // BubbleSort     : addi x9  x0  0x03C           // x9  = 4*(number-1)
 //    0x68     //                  addi x10 x0  0x000           // x10 = 4*i = 0
 //    0x6C     // BubbleOutLoop  : sub  x12 x9  x10             // x12 = 4*(number-1-i)
 //    0x70     //                  addi x11 x0  0x000           // x11 = 4*j = 0
@@ -97,7 +97,7 @@ EF_F0_5F_F3 // 1_1110011010_1_11111111_00001_1101111   //0xD4// jal  0xFFF9A (to
 //    0x90     //                  bne  x11 x12 BubbleInLoop    // continue BubbleInLoop
 //    0x94     //                  addi x10 x10 0x004           // i=i+1, x10 = 4*i
 //    0x98     //                  bne  x10 x9  BubbleOutLoop   // continue BubbleOutLoop
-//    0x9C     //                  addi x9  x0  0x014           // x9  = 4*number
+//    0x9C     //                  addi x9  x0  0x040           // x9  = 4*number
 //    0xA0     //                  addi x10 x0  0x000           // x10 = 4*k = 0
 //    0xA4     // BubbleOutput   : lw   x8  x10 0x000           // x8 = arr[k]
 //    0xA8     //                  jal  x1  OutputTestPort
