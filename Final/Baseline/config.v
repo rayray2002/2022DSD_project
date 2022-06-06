@@ -5,7 +5,6 @@
 `include "Imm_Gen.v"
 `include "Jump_Imm_Gen.v"
 `include "Control.v"
-`include "Zero.v"
 `include "Hazard_Detection.v"
 `include "ID_EX.v"
 `include "Forwarding_Unit.v"
