@@ -90,7 +90,7 @@ module RISCV_Pipeline (
     //       );
 
     assign IF_jal = (IF_instr[4:3] == 2'b01);
-    assign IF_jalr = (IF_instr[4:2] == 2'b001);
+    assign IF_jalr = (IF_instr[4:2] == 3'b001);
     PC_Control PC_Control(
             .imm_ext(IF_imm),
             .PC_i(IF_pc_o),

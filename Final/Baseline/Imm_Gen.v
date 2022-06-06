@@ -6,11 +6,8 @@ module Imm_Gen (
 input [31:0] instruction_i;
 output reg [31:0] imm_o;
 
-reg [6:0] opcode;
-
 always @(*) begin
-    opcode = instruction_i[6:0];
-    case (opcode)
+    case (instruction_i[6:0])
         // I-type
         7'b0000011, 7'b1100111: imm_o = {{20{instruction_i[31]}}, instruction_i[31:20]}; // lw
         // S-type
