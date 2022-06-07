@@ -300,7 +300,7 @@ module RISCV_Pipeline (
 
     ALU_Control ALU_Control (
                     .funct3_i (EX_funct[2: 0]),
-                    .funct7_5_i(EX_funct[8]),
+                    .funct7_5_i(EX_funct[8]&EX_funct[1]),
                     .ALUOp_i (EX_ctrl[5: 4]),
                     .ALUCtrl_o(EX_ALUCtrl)
                 );

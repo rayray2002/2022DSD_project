@@ -129,7 +129,7 @@ module Final_tb;
 	 	$display("-----------------------------------------------------\n");
 
      
-		#(`CYCLE*10000000) // calculate clock cycles for all operation (you can modify it)
+		#(`CYCLE*1000000) // calculate clock cycles for all operation (you can modify it)
 		$display("============================================================================");
 		$display("\n           Error!!! There is something wrong with your code ...!          ");
 		$display("\n                       The test result is .....FAIL                     \n");
