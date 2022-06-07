@@ -107,8 +107,8 @@ module RISCV_Pipeline (
         );
 
     PC PC_module (
-           .clk_i(clk ),
-           .rst_i(rst_n ),
+           .clk(clk ),
+           .rst_n(rst_n ),
            .PCWrite_i(PCWrite),
            .pc_i (IF_pc_i ),
            .pc_o (IF_pc_o ),
@@ -121,8 +121,8 @@ module RISCV_Pipeline (
     );
 
     IF_ID IF_ID (
-              .clk_i(clk),
-              .rst_i (rst_n ),
+              .clk(clk),
+              .rst_n (rst_n ),
               .instr_i((jalr | Branch_taken) ? 32'b0 : IF_instr),
               .instr_o(ID_instr),
               .pc_plus_i(IF_pc_plus),
@@ -223,8 +223,8 @@ module RISCV_Pipeline (
         );
 
     ID_EX ID_EX(
-              .clk_i(clk),
-              .rst_i(rst_n),
+              .clk(clk),
+              .rst_n(rst_n),
               .ctrl_i(ID_ctrl),
               .ctrl_o(EX_ctrl),
               .RS1data_i(ID_RS1data),
@@ -307,8 +307,8 @@ module RISCV_Pipeline (
 
     assign EX_ALUResult_final = EX_jump ? EX_pc_plus : EX_ALUResult;
     EX_MEM EX_MEM (
-               .clk_i(clk),
-               .rst_i(rst_n),
+               .clk(clk),
+               .rst_n(rst_n),
                .ctrl_i(EX_ctrl[3: 0]),
                .ctrl_o(MEM_ctrl),
                .ALUResult_i(EX_ALUResult_final),
@@ -322,8 +322,8 @@ module RISCV_Pipeline (
 
     // Mem stage
     MEM_WB MEM_WB(
-               .clk_i(clk),
-               .rst_i(rst_n),
+               .clk(clk),
+               .rst_n(rst_n),
                .ctrl_i(MEM_ctrl[1: 0]),
                .ctrl_o(WB_ctrl),
                .ALUResult_i(MEM_ALUResult),

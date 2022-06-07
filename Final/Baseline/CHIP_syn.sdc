@@ -6,7 +6,7 @@ check_design
 #You may modified the clock constraints 
 #or add more constraints for your design
 ####################################################
-set cycle  5
+set cycle  5.0
 ####################################################
 
 
@@ -32,6 +32,8 @@ set_input_delay  $t_in  -clock CLK [remove_from_collection [all_inputs] [get_por
 set_output_delay $t_out -clock CLK [all_outputs]
 #####################################################
 
+set_fix_multiple_port_nets -all -constants -buffer_constants [get_designs *]
+remove_unconnected_ports -blast_buses [get_cells -hierarchical *]
 
 #Compile and save files
 #You may modified setting of compile 

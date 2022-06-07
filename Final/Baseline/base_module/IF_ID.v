@@ -1,6 +1,6 @@
 module IF_ID(
-        clk_i,
-        rst_i,
+        clk,
+        rst_n,
         instr_i,
         instr_o,
         pc_plus_i,
@@ -10,7 +10,7 @@ module IF_ID(
         Stall_i
     );
 
-    input clk_i, rst_i, Stall_i;
+    input clk, rst_n, Stall_i;
     input [31: 0] instr_i;
     output reg [31: 0] instr_o;
     input [31: 0] pc_plus_i;
@@ -18,9 +18,8 @@ module IF_ID(
     input [31: 0] pc_i;
     output reg [31: 0] pc_o;
 
-    always @(posedge clk_i)
-    begin
-        if (~rst_i) begin
+    always @(posedge clk) begin
+        if (~rst_n) begin
             instr_o <= 32'b0;
             pc_plus_o <= 32'b0;
             pc_o <= 32'b0;
