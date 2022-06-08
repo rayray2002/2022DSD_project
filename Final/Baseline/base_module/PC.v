@@ -14,11 +14,7 @@ module PC
     input               stall_i;
     input               PCWrite_i;
     input   [31:0]      pc_i;
-    output  [31:0]      pc_o;
-
-    // Wires & Registers
-    reg     [31:0]      pc_o;
-
+    output  reg [31:0]      pc_o;
 
     always@(posedge clk) begin
         if(~rst_n)

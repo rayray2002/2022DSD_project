@@ -48,7 +48,18 @@ module ID_EX(
     output reg [4: 0] RDaddr_o;
 
     always @(posedge clk) begin
-        if (Stall_i) begin
+        if (~rst_n) begin
+            ctrl_o <= 7'b0;
+            RS1data_o <= 32'b0;
+            RS2data_o <= 32'b0;
+            jump_o <= 1'b0;
+            pc_plus_o <= 32'b0;
+            imm_o <= 32'b0;
+            funct_o <= 10'b0;
+            RS1addr_o <= 5'b0;
+            RS2addr_o <= 5'b0;
+            RDaddr_o <= 5'b0;
+        end else if (Stall_i) begin
             ctrl_o <= ctrl_o;
             RS1data_o <= RS1data_o;
             RS2data_o <= RS2data_o;
@@ -60,7 +71,7 @@ module ID_EX(
             RS2addr_o <= RS2addr_o;
             RDaddr_o <= RDaddr_o;
         end
-        else if (~rst_n | flush_i) begin
+        else if (flush_i) begin
             ctrl_o <= 7'b0;
             RS1data_o <= 32'b0;
             RS2data_o <= 32'b0;
@@ -72,7 +83,7 @@ module ID_EX(
             RS2addr_o <= 5'b0;
             RDaddr_o <= 5'b0;
         end
-        else if (~Stall_i) begin
+        else begin
             ctrl_o <= ctrl_i;
             RS1data_o <= RS1data_i;
             RS2data_o <= RS2data_i;

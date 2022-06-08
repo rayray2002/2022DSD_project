@@ -37,8 +37,8 @@ module RISCV_Pipeline (
     assign ID_RS2addr = ID_instr[24: 20];
 
     // EX
-    wire [31: 0] EX_pc_plus;
-    wire signed [31: 0] EX_RS1data, EX_RS2data, EX_imm_ext, EX_ALUdata1, EX_ALU_data2, EX_ALURS2, EX_ALUResult, EX_ALUResult_final;
+    wire [31: 0] EX_pc_plus, EX_ALUResult_final;
+    wire [31: 0] EX_RS1data, EX_RS2data, EX_imm_ext, EX_ALUdata1, EX_ALU_data2, EX_ALURS2, EX_ALUResult;
     wire [9: 0] EX_funct;
     wire [6: 0] EX_ctrl;
     wire [4: 0] EX_RDaddr, EX_RS1addr, EX_RS2addr;

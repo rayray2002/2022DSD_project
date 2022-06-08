@@ -15,8 +15,8 @@ input [4: 0] MEM_RD_i;
 input [4: 0] WB_RD_i;
 input MEM_RegWrite_i;
 input WB_RegWrite_i;
-output reg [1: 0] FowardA_o = 2'b00;
-output reg [1: 0] FowardB_o = 2'b00;
+output reg [1: 0] FowardA_o;
+output reg [1: 0] FowardB_o;
 
 always @(*) begin
     if (MEM_RegWrite_i && MEM_RD_i != 0 && MEM_RD_i == RS1_i)
