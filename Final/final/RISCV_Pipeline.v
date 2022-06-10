@@ -18,7 +18,7 @@ module RISCV_Pipeline (
         input         DCACHE_stall,
         input  [31:0] DCACHE_rdata,
         //--------------PC-----------------
-		output [31:0] PC
+        output [31:0] PC
     );
 
     // IF
@@ -43,7 +43,7 @@ module RISCV_Pipeline (
     wire [6: 0] EX_ctrl;
     wire [4: 0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
     wire [3: 0] EX_ALUCtrl;
-    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB;
+    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB, EX_Op;
     wire EX_zero, EX_jump;
 
     // Mem
@@ -92,19 +92,19 @@ module RISCV_Pipeline (
     assign IF_jal = (IF_instr[4:3] == 2'b01);
     assign IF_jalr = (IF_instr[4:2] == 3'b001);
     PC_Control PC_Control(
-            .imm_ext(IF_imm),
-            .PC_i(IF_pc_o),
-            .PC_branch(ID_imm_addr),
-            .PC_jalr(ID_jalr_addr),
-            .jal_i(IF_jal),
-            .IF_jalr_i(IF_jalr),
-            .jalr_i(jalr),
-            .branch(Branch_taken),
-            .miss(Branch_taken),
-            .PC_o(IF_pc_i),
-            .PC_plus_o(IF_pc_plus),
-            .PC_imm_o(IF_pc_imm)
-        );
+                   .imm_ext(IF_imm),
+                   .PC_i(IF_pc_o),
+                   .PC_branch(ID_imm_addr),
+                   .PC_jalr(ID_jalr_addr),
+                   .jal_i(IF_jal),
+                   .IF_jalr_i(IF_jalr),
+                   .jalr_i(jalr),
+                   .branch(Branch_taken),
+                   .miss(Branch_taken),
+                   .PC_o(IF_pc_i),
+                   .PC_plus_o(IF_pc_plus),
+                   .PC_imm_o(IF_pc_imm)
+               );
 
     PC PC_module (
            .clk_i(clk ),
@@ -114,11 +114,11 @@ module RISCV_Pipeline (
            .pc_o (IF_pc_o ),
            .stall_i (MEM_Stall)
        );
-    
+
     Jump_Imm_Gen Jump_Imm_Gen(
-        .instruction_i(IF_instr),
-        .imm_o(IF_imm)
-    );
+                     .instruction_i(IF_instr),
+                     .imm_o(IF_imm)
+                 );
 
     IF_ID IF_ID (
               .clk_i(clk),
@@ -146,32 +146,32 @@ module RISCV_Pipeline (
               );
 
     Forwarding_Unit Forwarding_Unit_ID (
-                .RS1_i(ID_RS1addr),
-                .RS2_i(ID_RS2addr),
-                .MEM_RD_i(EX_RDaddr),
-                .WB_RD_i(MEM_RDaddr),
-                .MEM_RegWrite_i(EX_ctrl[0]),
-                .WB_RegWrite_i(MEM_ctrl[0]),
-                .FowardA_o(ID_Foward1),
-                .FowardB_o(ID_Foward2)
-            );
+                        .RS1_i(ID_RS1addr),
+                        .RS2_i(ID_RS2addr),
+                        .MEM_RD_i(EX_RDaddr),
+                        .WB_RD_i(MEM_RDaddr),
+                        .MEM_RegWrite_i(EX_ctrl[0]),
+                        .WB_RegWrite_i(MEM_ctrl[0]),
+                        .FowardA_o(ID_Foward1),
+                        .FowardB_o(ID_Foward2)
+                    );
     MUX4 MUX_RS1 (
-            .data00_i(ID_RS1data_raw),
-            .data01_i(MEM_ALUResult),
-            .data10_i(EX_ALUResult_final),
-            .data11_i(),
-            .select_i(ID_Foward1),
-            .data_o(ID_RS1data)
-        );
+             .data00_i(ID_RS1data_raw),
+             .data01_i(MEM_ALUResult),
+             .data10_i(EX_ALUResult_final),
+             .data11_i(),
+             .select_i(ID_Foward1),
+             .data_o(ID_RS1data)
+         );
 
     MUX4 MUX_RS2 (
-            .data00_i(ID_RS2data_raw),
-            .data01_i(MEM_ALUResult),
-            .data10_i(EX_ALUResult_final),
-            .data11_i(),
-            .select_i(ID_Foward2),
-            .data_o(ID_RS2data)
-        );
+             .data00_i(ID_RS2data_raw),
+             .data01_i(MEM_ALUResult),
+             .data10_i(EX_ALUResult_final),
+             .data11_i(),
+             .select_i(ID_Foward2),
+             .data_o(ID_RS2data)
+         );
 
     Imm_Gen Imm_Gen (
                 .instruction_i(ID_instr),
@@ -212,15 +212,15 @@ module RISCV_Pipeline (
             );
 
     Hazard_Detection Hazard_Detection (
-            .ID_RS1_i(ID_instr[19: 15]),
-            .ID_RS2_i(ID_instr[24: 20]),
-            .EX_RDaddr_i(EX_RDaddr),
-            .EX_MEMRead_i(EX_ctrl[2]),
+                         .ID_RS1_i(ID_instr[19: 15]),
+                         .ID_RS2_i(ID_instr[24: 20]),
+                         .EX_RDaddr_i(EX_RDaddr),
+                         .EX_MEMRead_i(EX_ctrl[2]),
 
-            .NoOP_o(NoOP),
-            .PCWrite_o(PCWrite),
-            .Stall_o(Stall)
-        );
+                         .NoOP_o(NoOP),
+                         .PCWrite_o(PCWrite),
+                         .Stall_o(Stall)
+                     );
 
     ID_EX ID_EX(
               .clk_i(clk),
@@ -246,7 +246,9 @@ module RISCV_Pipeline (
               .RDaddr_i(ID_instr[11: 7]),
               .RDaddr_o(EX_RDaddr),
               .Stall_i(MEM_Stall),
-              .flush_i(Branch_taken)
+              .flush_i(Branch_taken),
+              .Op_i(ID_instr[4:3]),
+              .Op_o(EX_Op)
           );
 
     // EX stage
@@ -299,9 +301,9 @@ module RISCV_Pipeline (
         );
 
     ALU_Control ALU_Control (
-                    .funct3_i (EX_funct[2: 0]),
-                    .funct7_5_i(EX_funct[8]&EX_funct[1]),
-                    .ALUOp_i (EX_ctrl[5: 4]),
+                    .funct3_i (EX_funct[2:0]),
+                    .funct7_i(EX_funct[8]),
+                    .ALUOp_i (EX_Op),
                     .ALUCtrl_o(EX_ALUCtrl)
                 );
 
