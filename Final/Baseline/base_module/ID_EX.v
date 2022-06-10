@@ -9,6 +9,12 @@ module ID_EX(
         RS2data_o,
         jump_i,
         jump_o,
+        branch_i,
+        branch_o,
+        func3_0_i,
+        func3_0_o,
+        pc_imm_i,
+        pc_imm_o,
         pc_plus_i,
         pc_plus_o,
         imm_i,
@@ -34,6 +40,12 @@ module ID_EX(
     output reg [31: 0] RS2data_o;
     input jump_i;
     output reg jump_o;
+    input branch_i;
+    output reg branch_o;
+    input func3_0_i;
+    output reg func3_0_o;
+    input [31: 0] pc_imm_i;
+    output reg [31: 0] pc_imm_o;
     input [31: 0] pc_plus_i;
     output reg [31: 0] pc_plus_o;
     input [31: 0] imm_i;
@@ -53,6 +65,9 @@ module ID_EX(
             RS1data_o <= 32'b0;
             RS2data_o <= 32'b0;
             jump_o <= 1'b0;
+            branch_o <= 1'b0;
+            func3_0_o <= 3'b0;
+            pc_imm_o <= 32'b0;
             pc_plus_o <= 32'b0;
             imm_o <= 32'b0;
             funct_o <= 10'b0;
@@ -64,6 +79,9 @@ module ID_EX(
             RS1data_o <= RS1data_o;
             RS2data_o <= RS2data_o;
             jump_o <= jump_o;
+            branch_o <= branch_o;
+            func3_0_o <= func3_0_o;
+            pc_imm_o <= pc_imm_o;
             pc_plus_o <= pc_plus_o;
             imm_o <= imm_o;
             funct_o <= funct_o;
@@ -76,6 +94,9 @@ module ID_EX(
             RS1data_o <= 32'b0;
             RS2data_o <= 32'b0;
             jump_o <= 1'b0;
+            branch_o <= 1'b0;
+            func3_0_o <= 3'b0;
+            pc_imm_o <= 32'b0;
             pc_plus_o <= 32'b0;
             imm_o <= 32'b0;
             funct_o <= 10'b0;
@@ -88,6 +109,9 @@ module ID_EX(
             RS1data_o <= RS1data_i;
             RS2data_o <= RS2data_i;
             jump_o <= jump_i;
+            branch_o <= branch_i;
+            func3_0_o <= func3_0_i;
+            pc_imm_o <= pc_imm_i;
             pc_plus_o <= pc_plus_i;
             imm_o <= imm_i;
             funct_o <= funct_i;

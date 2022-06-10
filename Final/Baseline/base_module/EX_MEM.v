@@ -9,10 +9,11 @@ module EX_MEM(
         RS2data_o,
         RDaddr_i,
         RDaddr_o,
-        Stall_i
+        Stall_i,
+        flush_i
     );
 
-    input clk, rst_n, Stall_i;
+    input clk, rst_n, Stall_i, flush_i;
     input [3: 0] ctrl_i;
     output reg [3: 0] ctrl_o;
     input signed [31: 0] ALUResult_i;
@@ -23,8 +24,7 @@ module EX_MEM(
     output reg [4: 0] RDaddr_o;
 
     always @(posedge clk) begin
-        if (~rst_n)
-        begin
+        if (~rst_n) begin
             ctrl_o <= 4'b0;
             ALUResult_o <= 32'b0;
             RS2data_o <= 32'b0;
@@ -35,6 +35,12 @@ module EX_MEM(
             ALUResult_o <= ALUResult_i;
             RS2data_o <= RS2data_i;
             RDaddr_o <= RDaddr_i;
+        end
+        else if (flush_i) begin
+            ctrl_o <= 4'b0;
+            ALUResult_o <= 32'b0;
+            RS2data_o <= 32'b0;
+            RDaddr_o <= 5'b0;
         end
         else begin
             ctrl_o <= ctrl_o;

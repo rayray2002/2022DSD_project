@@ -37,14 +37,14 @@ module RISCV_Pipeline (
     assign ID_RS2addr = ID_instr[24: 20];
 
     // EX
-    wire [31: 0] EX_pc_plus, EX_ALUResult_final;
+    wire [31: 0] EX_pc_plus, EX_ALUResult_final, EX_pc_imm;
     wire [31: 0] EX_RS1data, EX_RS2data, EX_imm_ext, EX_ALUdata1, EX_ALU_data2, EX_ALURS2, EX_ALUResult;
     wire [9: 0] EX_funct;
     wire [6: 0] EX_ctrl;
     wire [4: 0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
     wire [3: 0] EX_ALUCtrl;
     wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB;
-    wire EX_zero, EX_jump;
+    wire EX_zero, EX_jump, EX_Branch, EX_func3_0;
 
     // Mem
     wire signed [31: 0] MEM_ALUResult, MEM_RS2data, MEM_MemData;
@@ -94,7 +94,7 @@ module RISCV_Pipeline (
     PC_Control PC_Control(
             .imm_ext(IF_imm),
             .PC_i(IF_pc_o),
-            .PC_branch(ID_imm_addr),
+            .PC_branch(EX_pc_imm),
             .PC_jalr(ID_jalr_addr),
             .jal_i(IF_jal),
             .IF_jalr_i(IF_jalr),
@@ -204,13 +204,6 @@ module RISCV_Pipeline (
               .data_o (ID_jalr_addr)
           );
 
-    Compare Compare (
-                .equal_i(ID_RS1data == ID_RS2data),
-                .func3_0_i(ID_instr[12]),
-                .branch_i(Branch),
-                .branch_taken_o(Branch_taken)
-            );
-
     Hazard_Detection Hazard_Detection (
             .ID_RS1_i(ID_instr[19: 15]),
             .ID_RS2_i(ID_instr[24: 20]),
@@ -233,6 +226,12 @@ module RISCV_Pipeline (
               .RS2data_o(EX_RS2data),
               .jump_i(jalr|jal),
               .jump_o(EX_jump),
+              .branch_i(Branch),
+              .branch_o(EX_Branch),
+              .func3_0_i(ID_instr[12]),
+              .func3_0_o(EX_func3_0),
+              .pc_imm_i(ID_pc_imm),
+              .pc_imm_o(EX_pc_imm),
               .pc_plus_i(ID_pc_plus),
               .pc_plus_o(EX_pc_plus),
               .imm_i(ID_imm_ext),
@@ -269,7 +268,7 @@ module RISCV_Pipeline (
              .data00_i(EX_RS1data),
              .data01_i(WB_RDdata),
              .data10_i(MEM_ALUResult),
-             .data11_i(),
+             .data11_i(32'b0),
              .select_i(EX_FowardA),
              .data_o(EX_ALUdata1)
          );
@@ -278,10 +277,17 @@ module RISCV_Pipeline (
              .data00_i(EX_RS2data),
              .data01_i(WB_RDdata),
              .data10_i(MEM_ALUResult),
-             .data11_i(),
+             .data11_i(32'b0),
              .select_i(EX_FowardB),
              .data_o(EX_ALURS2)
          );
+
+    Compare Compare (
+            .equal_i(EX_ALUdata1 == EX_ALU_data2),
+            .func3_0_i(EX_func3_0),
+            .branch_i(EX_Branch),
+            .branch_taken_o(Branch_taken)
+        );
 
     // MUX32 MUX_ALUSrc (
     //           .data1_i (EX_ALURS2),
@@ -317,7 +323,8 @@ module RISCV_Pipeline (
                .RS2data_o(MEM_RS2data),
                .RDaddr_i(EX_RDaddr),
                .RDaddr_o(MEM_RDaddr),
-               .Stall_i(MEM_Stall)
+               .Stall_i(MEM_Stall),
+               .flush_i(Branch_taken)
            );
 
     // Mem stage
