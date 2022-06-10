@@ -27,7 +27,7 @@ module RISCV_Pipeline (
 
     // ID
     wire [31: 0] ID_instr, ID_pc_plus, ID_pc_imm, ID_pc;
-    wire signed [31: 0] ID_RS1data_raw, ID_RS2data_raw ,ID_RS1data, ID_RS2data, ID_imm_ext, ID_pc_o, ID_jalr_addr, ID_imm_addr;
+    wire signed [31: 0] ID_RS1data_jalr ,ID_RS1data, ID_RS2data, ID_imm_ext, ID_pc_o, ID_jalr_addr, ID_imm_addr;
     wire [6: 0] ID_ctrl;
     wire [4: 0] ID_RS1addr, ID_RS2addr;
     wire [1: 0] ID_Foward1, ID_Foward2;
@@ -141,8 +141,8 @@ module RISCV_Pipeline (
                   .RDaddr_i  (WB_RDaddr ),
                   .RDdata_i  (WB_RDdata ),
                   .RegWrite_i(WB_ctrl[0] ),
-                  .RS1data_o (ID_RS1data_raw ),
-                  .RS2data_o (ID_RS2data_raw )
+                  .RS1data_o (ID_RS1data ),
+                  .RS2data_o (ID_RS2data )
               );
 
     Forwarding_Unit Forwarding_Unit_ID (
@@ -156,22 +156,22 @@ module RISCV_Pipeline (
                 .FowardB_o(ID_Foward2)
             );
     MUX4 MUX_RS1 (
-            .data00_i(ID_RS1data_raw),
+            .data00_i(ID_RS1data),
             .data01_i(MEM_ALUResult),
             .data10_i(EX_ALUResult_final),
             .data11_i(),
             .select_i(ID_Foward1),
-            .data_o(ID_RS1data)
+            .data_o(ID_RS1data_jalr)
         );
 
-    MUX4 MUX_RS2 (
-            .data00_i(ID_RS2data_raw),
-            .data01_i(MEM_ALUResult),
-            .data10_i(EX_ALUResult_final),
-            .data11_i(),
-            .select_i(ID_Foward2),
-            .data_o(ID_RS2data)
-        );
+    // MUX4 MUX_RS2 (
+    //         .data00_i(ID_RS2data_raw),
+    //         .data01_i(MEM_ALUResult),
+    //         .data10_i(EX_ALUResult_final),
+    //         .data11_i(),
+    //         .select_i(ID_Foward2),
+    //         .data_o(ID_RS2data)
+    //     );
 
     Imm_Gen Imm_Gen (
                 .instruction_i(ID_instr),
@@ -200,7 +200,7 @@ module RISCV_Pipeline (
     assign ID_imm_addr = Branch_taken ? ID_pc_imm : ID_pc_plus;
     Adder Add_jalr_addr (
               .data1_in(ID_imm_ext),
-              .data2_in(ID_RS1data),
+              .data2_in(ID_RS1data_jalr),
               .data_o (ID_jalr_addr)
           );
 
