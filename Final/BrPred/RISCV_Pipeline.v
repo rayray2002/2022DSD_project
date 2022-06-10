@@ -43,7 +43,7 @@ module RISCV_Pipeline (
     wire [6: 0] EX_ctrl;
     wire [4: 0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
     wire [3: 0] EX_ALUCtrl;
-    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB;
+    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB, EX_Op;
     wire EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr, EX_miss, EX_BPHit;
 
     // Mem
@@ -262,7 +262,9 @@ module RISCV_Pipeline (
               .RDaddr_i(ID_instr[11: 7]),
               .RDaddr_o(EX_RDaddr),
               .Stall_i(MEM_Stall),
-              .flush_i(EX_miss)
+              .flush_i(EX_miss),
+              .Op_i(ID_instr[4:3]),
+              .Op_o(EX_Op)
           );
 
     // EX stage
@@ -332,9 +334,9 @@ module RISCV_Pipeline (
 
     ALU_Control ALU_Control (
                     .funct3_i (EX_funct[2: 0]),
-                    .funct7_5_i(EX_funct[8]),
+                    .funct7_i(EX_funct[8]),
                     // .funct7_5_i(EX_funct[8]&EX_funct[1]),
-                    .ALUOp_i (EX_ctrl[5: 4]),
+                    .ALUOp_i (EX_Op),
                     .ALUCtrl_o(EX_ALUCtrl)
                 );
 

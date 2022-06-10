@@ -1,6 +1,8 @@
-`include "cache_controller.v"
+`define TWO_WAY
 
-module cache(
+`include "D_cache_controller.v"
+
+module D_cache(
     input          clk,
 
     // processor interface
@@ -19,7 +21,7 @@ module cache(
     input          mem_ready
 );
 
-cache_controller cache_controller_U(
+D_cache_controller cache_controller(
     .clk(clk),
     .proc_reset_i(proc_reset),
     .proc_read_i(proc_read),

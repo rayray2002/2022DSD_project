@@ -7,6 +7,7 @@ module PC_Control(
     input IF_jalr_i,
     input jalr_i,
     input branch,
+    input compressed,
     input miss,
 
     output [31:0] PC_o,
@@ -18,7 +19,7 @@ wire [31:0] PC_1;
 wire [31:0] PC_2;
 wire [31:0] PC_3;
 
-assign PC_plus_o = PC_i + 4;
+assign PC_plus_o = PC_i + (compressed ? 2 : 4);
 assign PC_imm_o = PC_i + imm_ext;
 
 assign PC_1 = (jal_i | branch) ? PC_imm_o : (IF_jalr_i ? PC_i : PC_plus_o);

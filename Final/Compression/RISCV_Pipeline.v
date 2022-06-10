@@ -6,7 +6,7 @@ module RISCV_Pipeline (
         /*I_cache interface*/
         output        ICACHE_ren,
         output        ICACHE_wen,
-        output [29:0] ICACHE_addr,
+        output [30:0] ICACHE_addr,
         output [31:0] ICACHE_wdata,
         input         ICACHE_stall,
         input  [31:0] ICACHE_rdata,
@@ -22,8 +22,8 @@ module RISCV_Pipeline (
     );
 
     // IF
-    wire [31: 0] IF_pc_i, IF_pc_o, IF_instr, IF_pc_plus, IF_pc_imm, IF_imm;
-    wire IF_jal, IF_jalr, IF_BPHit;
+    wire [31: 0] IF_pc_i, IF_pc_o, IF_instr, IF_instr_raw, IF_pc_plus, IF_pc_imm, IF_imm;
+    wire IF_jal, IF_jalr, IF_BPHit, IF_compressed;
 
     // ID
     wire [31: 0] ID_instr, ID_pc_plus, ID_pc_imm, ID_pc;
@@ -43,7 +43,7 @@ module RISCV_Pipeline (
     wire [6: 0] EX_ctrl;
     wire [4: 0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
     wire [3: 0] EX_ALUCtrl;
-    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB;
+    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB, EX_Op;
     wire EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr, EX_miss, EX_BPHit;
 
     // Mem
@@ -60,11 +60,10 @@ module RISCV_Pipeline (
     // Assign
     assign ICACHE_ren  	= 1'b1;
     assign ICACHE_wen  	= 1'b0;
-    assign ICACHE_addr 	= IF_pc_o[31:2];//[31:2];
+    assign ICACHE_addr 	= IF_pc_o[31:1];//[31:2];
     assign ICACHE_wdata = 32'd0;
     assign MEM_Stall = ICACHE_stall | DCACHE_stall;
-    assign IF_instr = {ICACHE_rdata[7:0], ICACHE_rdata[15:8], ICACHE_rdata[23:16], ICACHE_rdata[31:24]};
-
+    assign IF_instr_raw = {ICACHE_rdata[7:0], ICACHE_rdata[15:8], ICACHE_rdata[23:16], ICACHE_rdata[31:24]};
 
     assign DCACHE_ren = MEM_ctrl[2];
     assign DCACHE_wen = MEM_ctrl[3];
@@ -101,7 +100,7 @@ module RISCV_Pipeline (
             .IF_jalr_i(IF_jalr|ID_jalr),
             .jalr_i(EX_jalr),
             .branch(IF_BPHit),
-            // .branch(Branch_taken),
+            .compressed(IF_compressed),
             .miss(EX_miss),
             .PC_o(IF_pc_i),
             .PC_plus_o(IF_pc_plus),
@@ -117,19 +116,26 @@ module RISCV_Pipeline (
            .stall_i (MEM_Stall)
        );
 
+    Decompressor Decompressor (
+        .PC_2(IF_pc_o[1]),
+        .inst_raw(IF_instr_raw),
+        .inst(IF_instr),
+        .compr(IF_compressed)
+    );
+
     BrPred_local_2bit #(
         .NUM_INDEX_BIT(4)
     ) BrPred(
-        .clk               (clk                ),
-        .rst_n             (rst_n                ),
+        .clk               (clk),
+        .rst_n             (rst_n),
         .branch            (IF_branch),
     
         .BranchTaken_i     (Branch_taken),
         .miss              (EX_miss),
-        .WriteAddr_i       (EX_pc_plus         ),
+        .WriteAddr_i       (EX_pc_plus),
     
-        .ReadAddr_i        (IF_pc_plus         ),
-        .Hit_o             (IF_BPHit           )
+        .ReadAddr_i        (IF_pc_plus),
+        .Hit_o             (IF_BPHit)
     );
     
     Jump_Imm_Gen Jump_Imm_Gen(
@@ -153,8 +159,8 @@ module RISCV_Pipeline (
 
     // ID stage
     Registers Registers (
-                  .clk (clk ),
-                  .rst_n (rst_n),
+                  .clk       (clk ),
+                  .rst_n     (rst_n),
                   .RS1addr_i (ID_RS1addr),
                   .RS2addr_i (ID_RS2addr),
                   .RDaddr_i  (WB_RDaddr ),
@@ -262,7 +268,9 @@ module RISCV_Pipeline (
               .RDaddr_i(ID_instr[11: 7]),
               .RDaddr_o(EX_RDaddr),
               .Stall_i(MEM_Stall),
-              .flush_i(EX_miss)
+              .flush_i(EX_miss),
+              .Op_i(ID_instr[4:3]),
+              .Op_o(EX_Op)
           );
 
     // EX stage
@@ -331,12 +339,11 @@ module RISCV_Pipeline (
         );
 
     ALU_Control ALU_Control (
-                    .funct3_i (EX_funct[2: 0]),
-                    .funct7_5_i(EX_funct[8]),
-                    // .funct7_5_i(EX_funct[8]&EX_funct[1]),
-                    .ALUOp_i (EX_ctrl[5: 4]),
-                    .ALUCtrl_o(EX_ALUCtrl)
-                );
+        .funct3_i (EX_funct[2:0]),
+        .funct7_i(EX_funct[8]),
+        .ALUOp_i (EX_Op),
+        .ALUCtrl_o(EX_ALUCtrl)
+    );
 
     assign EX_ALUResult_final = EX_jump ? EX_pc_plus : EX_ALUResult;
     EX_MEM EX_MEM (

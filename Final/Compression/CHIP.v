@@ -1,5 +1,6 @@
 `include "RISCV_Pipeline.v"
-`include "cache_2way.v"
+`include "I_cache_2way.v"
+`include "D_cache_2way.v"
 
 // Top module of your design, you cannot modify this module!!
 module CHIP (	clk,
@@ -50,7 +51,7 @@ output	[31:0]	PC;
 // wire declaration
 wire        ICACHE_ren;
 wire        ICACHE_wen;
-wire [29:0] ICACHE_addr;
+wire [30:0] ICACHE_addr;
 wire [31:0] ICACHE_wdata;
 wire        ICACHE_stall;
 wire [31:0] ICACHE_rdata;
@@ -94,7 +95,7 @@ wire [31:0] PC;
 	);
 	
 
-	cache D_cache(
+	D_cache D_cache(
         .clk        (clk)         ,
         .proc_reset (~rst_n)      ,
         .proc_read  (DCACHE_ren)  ,
@@ -111,7 +112,7 @@ wire [31:0] PC;
         .mem_ready  (mem_ready_D)
 	);
 
-	cache I_cache(
+	I_cache I_cache(
         .clk        (clk)         ,
         .proc_reset (~rst_n)      ,
         .proc_read  (ICACHE_ren)  ,

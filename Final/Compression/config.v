@@ -16,3 +16,4 @@
 `include "./base_module/PC_Control.v"
 `include "./base_module/Compare.v"
 `include "./BrPred_local_2bit.v"
+`include "./decompressor.v"

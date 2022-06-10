@@ -1,6 +1,12 @@
-`include "cache_sram_2way.v"
+`ifndef TWO_WAY
+    // direct-mapped
+    `include "cache_sram_dm.v"
+`else
+    // 2-way
+    `include "cache_sram_2way.v"
+`endif
 
-module cache_controller(
+module D_cache_controller(
     input             clk,
 
     // processor interface
@@ -34,12 +40,21 @@ localparam STATE_READY       = 3'd3;
 //// Wire/Reg Declaration ////
 wire proc_access;
 
-// 2-way
-wire [155:0] sram_rdata;
-reg [155:0] sram_wdata;
-wire [25:0] sram_tag;
-wire [25:0] proc_addr_tag;
-wire [1:0] proc_addr_index;
+`ifndef TWO_WAY
+    // direct-mapped
+    wire [154:0] sram_rdata;
+    reg [154:0] sram_wdata;
+    wire [24:0] sram_tag;
+    wire [24:0] proc_addr_tag;
+    wire [2:0] proc_addr_index;
+`else
+    // 2-way
+    wire [155:0] sram_rdata;
+    reg [155:0] sram_wdata;
+    wire [25:0] sram_tag;
+    wire [25:0] proc_addr_tag;
+    wire [1:0] proc_addr_index;
+`endif
 
 wire [127:0] sram_data;
 wire sram_hit;
@@ -55,7 +70,8 @@ integer i;
 
 
 //// Submodule Instantiation ////
-cache_sram_2way cache_sram_2way_U(
+`ifndef TWO_WAY
+    cache_sram_dm cache_sram_dm_U(
         .clk(clk),
         .rst(proc_reset_i),
 
@@ -66,6 +82,19 @@ cache_sram_2way cache_sram_2way_U(
         .rdata_o(sram_rdata),
         .hit_o(sram_hit)
     );
+`else
+    cache_sram_2way cache_sram_2way_U(
+        .clk(clk),
+        .rst(proc_reset_i),
+
+        .addr_i(proc_addr_i),
+        .wdata_i(sram_wdata),
+        .write_i(sram_write),
+
+        .rdata_o(sram_rdata),
+        .hit_o(sram_hit)
+    );
+`endif
 
 
 //// Finite-State Machine ////
@@ -154,32 +183,61 @@ always @* begin
     end
 end
 
-// 2-way
-assign sram_dirty       = sram_rdata[154];
-assign sram_tag         = sram_rdata[153:128];
-assign sram_data        = sram_rdata[127:0];
+`ifndef TWO_WAY
+    // direct-mapped
+    assign sram_dirty       = sram_rdata[153];
+    assign sram_tag         = sram_rdata[152:128];
+    assign sram_data        = sram_rdata[127:0];
 
-assign proc_addr_tag    = proc_addr_i[29:4];
-assign proc_addr_index  = proc_addr_i[3:2];
-assign proc_addr_offset = proc_addr_i[1:0];
+    assign proc_addr_tag    = proc_addr_i[29:5];
+    assign proc_addr_index  = proc_addr_i[4:2];
+    assign proc_addr_offset = proc_addr_i[1:0];
 
-always @* begin
-    // valid(1), dirty(1), tag(26), word0(32), word1(32), word2(32), word3(32)
-    sram_wdata = { 2'b11, proc_addr_tag, sram_data };
+    always @* begin
+        // valid(1), dirty(1), tag(25), word0(32), word1(32), word2(32), word3(32)
+        sram_wdata = { 2'b11, proc_addr_tag, sram_data };
 
-    if (state == STATE_READY) begin
-        // allocate
-        sram_wdata[154] = 0; // not dirty
-        sram_wdata[127:0] = mem_rdata_i;
-    end
-    else begin
-        // write hit
-        sram_wdata[154] = 1; // dirty
-        for (i = 0; i < 32; i = i + 1) begin
-            sram_wdata[(proc_addr_offset<<5) + i] = proc_wdata_i[i];
+        if (state == STATE_READY) begin
+            // allocate
+            sram_wdata[153] = 0; // not dirty
+            sram_wdata[127:0] = mem_rdata_i;
+        end
+        else begin
+            // write hit
+            sram_wdata[153] = 1; // dirty
+            for (i = 0; i < 32; i = i + 1) begin
+                sram_wdata[(proc_addr_offset<<5) + i] = proc_wdata_i[i];
+            end
         end
     end
-end
+`else
+    // 2-way
+    assign sram_dirty       = sram_rdata[154];
+    assign sram_tag         = sram_rdata[153:128];
+    assign sram_data        = sram_rdata[127:0];
+
+    assign proc_addr_tag    = proc_addr_i[29:4];
+    assign proc_addr_index  = proc_addr_i[3:2];
+    assign proc_addr_offset = proc_addr_i[1:0];
+
+    always @* begin
+        // valid(1), dirty(1), tag(26), word0(32), word1(32), word2(32), word3(32)
+        sram_wdata = { 2'b11, proc_addr_tag, sram_data };
+
+        if (state == STATE_READY) begin
+            // allocate
+            sram_wdata[154] = 0; // not dirty
+            sram_wdata[127:0] = mem_rdata_i;
+        end
+        else begin
+            // write hit
+            sram_wdata[154] = 1; // dirty
+            for (i = 0; i < 32; i = i + 1) begin
+                sram_wdata[(proc_addr_offset<<5) + i] = proc_wdata_i[i];
+            end
+        end
+    end
+`endif
 
 
 //// Sequential Logic ////
