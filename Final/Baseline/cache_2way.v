@@ -1,6 +1,6 @@
 `define TWO_WAY
 
-`include "cache_controller.v"
+`include "base_module/cache_controller.v"
 
 module cache(
     input          clk,

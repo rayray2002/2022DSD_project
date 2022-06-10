@@ -27,24 +27,24 @@ module RISCV_Pipeline (
 
     // ID
     wire [31: 0] ID_instr, ID_pc_plus, ID_pc_imm, ID_pc;
-    wire signed [31: 0] ID_RS1data_jalr ,ID_RS1data, ID_RS2data, ID_imm_ext, ID_pc_o, ID_jalr_addr, ID_imm_addr;
+    wire signed [31: 0] ID_RS1data, ID_RS2data, ID_imm_ext, ID_pc_o;
     wire [6: 0] ID_ctrl;
     wire [4: 0] ID_RS1addr, ID_RS2addr;
     wire [1: 0] ID_Foward1, ID_Foward2;
-    wire NoOP, PCWrite, Stall, Flush, Branch, jalr, jal, Branch_taken;
+    wire NoOP, PCWrite, Stall, Flush, Branch, ID_jalr, jal, Branch_taken;
 
     assign ID_RS1addr = ID_instr[19: 15];
     assign ID_RS2addr = ID_instr[24: 20];
 
     // EX
-    wire [31: 0] EX_pc_plus, EX_ALUResult_final, EX_pc_imm;
+    wire [31: 0] EX_pc_plus, EX_ALUResult_final, EX_pc_imm, EX_imm_addr, EX_RS1data_jalr, EX_jalr_addr;
     wire [31: 0] EX_RS1data, EX_RS2data, EX_imm_ext, EX_ALUdata1, EX_ALU_data2, EX_ALURS2, EX_ALUResult;
     wire [9: 0] EX_funct;
     wire [6: 0] EX_ctrl;
     wire [4: 0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
     wire [3: 0] EX_ALUCtrl;
     wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB;
-    wire EX_zero, EX_jump, EX_Branch, EX_func3_0;
+    wire EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr;
 
     // Mem
     wire signed [31: 0] MEM_ALUResult, MEM_RS2data, MEM_MemData;
@@ -95,10 +95,10 @@ module RISCV_Pipeline (
             .imm_ext(IF_imm),
             .PC_i(IF_pc_o),
             .PC_branch(EX_pc_imm),
-            .PC_jalr(ID_jalr_addr),
+            .PC_jalr(EX_jalr_addr),
             .jal_i(IF_jal),
-            .IF_jalr_i(IF_jalr),
-            .jalr_i(jalr),
+            .IF_jalr_i(IF_jalr|ID_jalr),
+            .jalr_i(EX_jalr),
             .branch(Branch_taken),
             .miss(Branch_taken),
             .PC_o(IF_pc_i),
@@ -123,7 +123,7 @@ module RISCV_Pipeline (
     IF_ID IF_ID (
               .clk(clk),
               .rst_n (rst_n ),
-              .instr_i((jalr | Branch_taken) ? 32'b0 : IF_instr),
+              .instr_i((EX_jalr | ID_jalr | Branch_taken) ? 32'b0 : IF_instr),
               .instr_o(ID_instr),
               .pc_plus_i(IF_pc_plus),
               .pc_plus_o(ID_pc_plus),
@@ -145,24 +145,24 @@ module RISCV_Pipeline (
                   .RS2data_o (ID_RS2data )
               );
 
-    Forwarding_Unit Forwarding_Unit_ID (
-                .RS1_i(ID_RS1addr),
-                .RS2_i(ID_RS2addr),
-                .MEM_RD_i(EX_RDaddr),
-                .WB_RD_i(MEM_RDaddr),
-                .MEM_RegWrite_i(EX_ctrl[0]),
-                .WB_RegWrite_i(MEM_ctrl[0]),
-                .FowardA_o(ID_Foward1),
-                .FowardB_o(ID_Foward2)
-            );
-    MUX4 MUX_RS1 (
-            .data00_i(ID_RS1data),
-            .data01_i(MEM_ALUResult),
-            .data10_i(EX_ALUResult_final),
-            .data11_i(),
-            .select_i(ID_Foward1),
-            .data_o(ID_RS1data_jalr)
-        );
+    // Forwarding_Unit Forwarding_Unit_ID (
+    //             .RS1_i(ID_RS1addr),
+    //             .RS2_i(),
+    //             .MEM_RD_i(EX_RDaddr),
+    //             .WB_RD_i(MEM_RDaddr),
+    //             .MEM_RegWrite_i(EX_ctrl[0]),
+    //             .WB_RegWrite_i(MEM_ctrl[0]),
+    //             .FowardA_o(ID_Foward1),
+    //             .FowardB_o()
+    //         );
+    // MUX4 MUX_RS1 (
+    //         .data00_i(ID_RS1data),
+    //         .data01_i(MEM_ALUResult),
+    //         .data10_i(EX_ALUResult_final),
+    //         .data11_i(),
+    //         .select_i(ID_Foward1),
+    //         .data_o(ID_RS1data_jalr)
+    //     );
 
     // MUX4 MUX_RS2 (
     //         .data00_i(ID_RS2data_raw),
@@ -181,7 +181,7 @@ module RISCV_Pipeline (
     Control Control (
                 .Op_i (ID_instr[6: 0]),
                 .NoOp_i(NoOP),
-                .jalr_o(jalr),
+                .jalr_o(ID_jalr),
                 .jal_o(jal),
                 .RegWrite_o(ID_ctrl[0]),
                 .MemtoReg_o(ID_ctrl[1]),
@@ -197,12 +197,6 @@ module RISCV_Pipeline (
     //           .data2_in(ID_pc),
     //           .data_o (ID_imm_addr)
     //       );
-    assign ID_imm_addr = Branch_taken ? ID_pc_imm : ID_pc_plus;
-    Adder Add_jalr_addr (
-              .data1_in(ID_imm_ext),
-              .data2_in(ID_RS1data_jalr),
-              .data_o (ID_jalr_addr)
-          );
 
     Hazard_Detection Hazard_Detection (
             .ID_RS1_i(ID_instr[19: 15]),
@@ -224,8 +218,10 @@ module RISCV_Pipeline (
               .RS1data_o(EX_RS1data),
               .RS2data_i(ID_RS2data),
               .RS2data_o(EX_RS2data),
-              .jump_i(jalr|jal),
+              .jump_i(ID_jalr|jal),
               .jump_o(EX_jump),
+              .jalr_i(ID_jalr),
+              .jalr_o(EX_jalr),
               .branch_i(Branch),
               .branch_o(EX_Branch),
               .func3_0_i(ID_instr[12]),
@@ -249,17 +245,19 @@ module RISCV_Pipeline (
           );
 
     // EX stage
+    assign EX_imm_addr = Branch_taken ? ID_pc_imm : ID_pc_plus;
+    
     Forwarding_Unit Forwarding_Unit_EX (
-                        .RS1_i(EX_RS1addr),
-                        .RS2_i(EX_RS2addr),
-                        .MEM_RD_i(MEM_RDaddr),
-                        .WB_RD_i(WB_RDaddr),
-                        .MEM_RegWrite_i(MEM_ctrl[0]),
-                        .WB_RegWrite_i(WB_ctrl[0]),
-                        .FowardA_o(EX_FowardA),
-                        .FowardB_o(EX_FowardB)
-                    );
-
+        .RS1_i(EX_RS1addr),
+        .RS2_i(EX_RS2addr),
+        .MEM_RD_i(MEM_RDaddr),
+        .WB_RD_i(WB_RDaddr),
+        .MEM_RegWrite_i(MEM_ctrl[0]),
+        .WB_RegWrite_i(WB_ctrl[0]),
+        .FowardA_o(EX_FowardA),
+        .FowardB_o(EX_FowardB)
+        );
+        
     // assign EX_ALUdata1 = EX_RS1data;
     // assign EX_ALURS2 = EX_RS2data;
     assign EX_ALU_data2 = EX_ctrl[6] ? EX_imm_ext : EX_ALURS2;
@@ -281,6 +279,12 @@ module RISCV_Pipeline (
              .select_i(EX_FowardB),
              .data_o(EX_ALURS2)
          );
+
+    Adder Add_jalr_addr (
+        .data1_in(EX_imm_ext),
+        .data2_in(EX_ALUdata1),
+        .data_o (EX_jalr_addr)
+    );
 
     Compare Compare (
             .equal_i(EX_ALUdata1 == EX_ALU_data2),

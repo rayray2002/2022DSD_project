@@ -6,7 +6,7 @@ check_design
 #You may modified the clock constraints 
 #or add more constraints for your design
 ####################################################
-set cycle  10.0
+set cycle  3.5
 ####################################################
 
 
@@ -38,8 +38,8 @@ remove_unconnected_ports -blast_buses [get_cells -hierarchical *]
 #Compile and save files
 #You may modified setting of compile 
 #####################################################
-# compile_ultra
-compile
+compile_ultra
+# compile
 write_sdf -version 2.1 CHIP_syn.sdf
 write -format verilog -hier -output CHIP_syn.v
 write -format ddc     -hier -output CHIP_syn.ddc  
