@@ -3,31 +3,31 @@
 
 `timescale 1 ns/10 ps
 
-`define CYCLE 3.5 // You can modify your clock frequency
+`define CYCLE 10 // You can modify your clock frequency
 
-`define DMEM_INIT "D_mem"
+`define DMEM_INIT "./test/D_mem"
 `define SDFFILE   "./CHIP_syn.sdf"	// Modify your SDF file name
 
 // For different condition (I_mem, TestBed)
 `ifdef noHazard
     `define IMEM_INIT "I_mem_noHazard"
-    `include "./TestBed_noHazard.v"
+    `include "./test/TestBed_noHazard.v"
 `endif
 `ifdef hasHazard
 	`define IMEM_INIT "I_mem_hasHazard"
-	`include "./TestBed_hasHazard.v"
+	`include "./test/TestBed_hasHazard.v"
 `endif	
 `ifdef BrPred
 	`define IMEM_INIT "I_mem_BrPred"
-	`include "./TestBed_BrPred.v"
+	`include "./test/TestBed_BrPred.v"
 `endif
 `ifdef compression
 	`define IMEM_INIT "I_mem_compression"
-	`include "./TestBed_compression.v"
+	`include "./test/TestBed_compression.v"
 `endif
 `ifdef decompression
 	`define IMEM_INIT "I_mem_decompression"
-	`include "./TestBed_compression.v"
+	`include "./test/TestBed_compression.v"
 `endif			
 
 module Final_tb;

@@ -19,7 +19,8 @@ wire [31:0] PC_1;
 wire [31:0] PC_2;
 wire [31:0] PC_3;
 
-assign PC_plus_o = PC_i + (compressed ? 2 : 4);
+// assign PC_plus_o = PC_i + (compressed ? 2 : 4);
+assign PC_plus_o = compressed ? {PC_i[31:1]+1'b1, PC_i[0]} : {PC_i[31:2]+1'b1, PC_i[1:0]};
 assign PC_imm_o = PC_i + imm_ext;
 
 assign PC_1 = (jal_i | branch) ? PC_imm_o : (IF_jalr_i ? PC_i : PC_plus_o);

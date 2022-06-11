@@ -26,7 +26,7 @@ module RISCV_Pipeline (
 
     // IF
     wire [31: 0] IF_pc_i, IF_pc_o, IF_instr, IF_instr_raw, IF_pc_plus, IF_pc_imm, IF_imm;
-    wire IF_jal, IF_jalr, IF_BPHit, IF_compressed;
+    wire IF_jal, IF_jalr, IF_BPHit, IF_compressed, IF_branch;
 
     // ID
     wire [31: 0] ID_instr, ID_pc_plus, ID_pc_imm, ID_pc;
