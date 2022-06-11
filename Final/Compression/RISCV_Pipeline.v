@@ -1,5 +1,8 @@
 `include "config.v"
 
+`define BP
+`define COMPRESS
+
 module RISCV_Pipeline (
         input         clk,
         input         rst_n,
@@ -43,7 +46,7 @@ module RISCV_Pipeline (
     wire [6: 0] EX_ctrl;
     wire [4: 0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
     wire [3: 0] EX_ALUCtrl;
-    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB, EX_Op;
+    wire [1: 0] EX_ALUOp, EX_FowardA, EX_FowardB;
     wire EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr, EX_miss, EX_BPHit;
 
     // Mem
@@ -115,14 +118,19 @@ module RISCV_Pipeline (
            .pc_o (IF_pc_o ),
            .stall_i (MEM_Stall)
        );
-
+`ifdef COMPRESS
     Decompressor Decompressor (
         .PC_2(IF_pc_o[1]),
         .inst_raw(IF_instr_raw),
         .inst(IF_instr),
         .compr(IF_compressed)
     );
+`else
+    assign IF_instr = IF_instr_raw;
+    assign IF_compressed = 1'b0;
+`endif
 
+`ifdef BP
     BrPred_local_2bit #(
         .NUM_INDEX_BIT(4)
     ) BrPred(
@@ -137,6 +145,9 @@ module RISCV_Pipeline (
         .ReadAddr_i        (IF_pc_plus),
         .Hit_o             (IF_BPHit)
     );
+`else
+    assign IF_BPHit = 1'b0;
+`endif
     
     Jump_Imm_Gen Jump_Imm_Gen(
         .instruction_i(IF_instr),
@@ -268,9 +279,7 @@ module RISCV_Pipeline (
               .RDaddr_i(ID_instr[11: 7]),
               .RDaddr_o(EX_RDaddr),
               .Stall_i(MEM_Stall),
-              .flush_i(EX_miss),
-              .Op_i(ID_instr[4:3]),
-              .Op_o(EX_Op)
+              .flush_i(EX_miss)
           );
 
     // EX stage
@@ -321,7 +330,7 @@ module RISCV_Pipeline (
             .branch_i(EX_Branch),
             .branch_taken_o(Branch_taken)
         );
-    assign EX_miss = EX_BPHit ^ Branch_taken;
+    assign EX_miss = EX_Branch & (EX_BPHit ^ Branch_taken);
 
     // MUX32 MUX_ALUSrc (
     //           .data1_i (EX_ALURS2),
@@ -337,11 +346,11 @@ module RISCV_Pipeline (
             .data_o (EX_ALUResult),
             .Zero_o (EX_zero )
         );
-
+    assign EX_ALUOp = EX_ctrl[5: 4];
     ALU_Control ALU_Control (
         .funct3_i (EX_funct[2:0]),
         .funct7_i(EX_funct[8]),
-        .ALUOp_i (EX_Op),
+        .ALUOp_i (EX_ALUOp),
         .ALUCtrl_o(EX_ALUCtrl)
     );
 
