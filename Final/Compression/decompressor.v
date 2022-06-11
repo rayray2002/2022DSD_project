@@ -16,9 +16,6 @@ module Decompressor (
             inst  = inst_raw;
         end else begin
             compr = 1; //PC + 2
-            // half_inst = ~PC_2 ? inst_raw[15:0] : inst_raw[31:16];
-            // half_inst = inst_raw[31:16];
-
             case ({half_inst[15:13], half_inst[1:0]})
                 /* c.lw ---------------------------------------------------------------------------*/
                 5'b01000 : inst = {5'b00000, half_inst[5], half_inst[12:10], half_inst[6], 2'b00, 2'b01, half_inst[9:7], 3'b010, 2'b01, half_inst[4:2], 7'b0000011};

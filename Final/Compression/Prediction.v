@@ -1,11 +1,13 @@
-module BrPred_local_2bit (
+module Prediction (
     input         clk          ,
     input         rst_n        ,
     input         branch       ,
-    input         BranchTaken_i,
     input         miss         ,
+    input         BranchTaken_i,
     input  [31:0] WriteAddr_i  ,
+    input  [31:0] WriteTarget_i,
     input  [31:0] ReadAddr_i   ,
+    output [31:0] ReadTarget_o ,
     output        Hit_o
 );
 
@@ -17,6 +19,8 @@ module BrPred_local_2bit (
     localparam S_NEAR_TAKEN    = 2;
     localparam S_TAKEN         = 3;
 
+    reg [31:0] target    [0:NUM_ENTRY-1];
+    reg [31:0] target_nxt[0:NUM_ENTRY-1];
 
     reg [1:0] predict    [0:NUM_ENTRY-1];
     reg [1:0] predict_nxt[0:NUM_ENTRY-1];
@@ -29,6 +33,7 @@ module BrPred_local_2bit (
 
 //// Combinational ////
 
+    assign ReadTarget_o = target[read_index];
 
     assign Hit_o = branch &
         (predict[read_index] == S_TAKEN
@@ -39,26 +44,42 @@ module BrPred_local_2bit (
 
     always @* begin
         for (i = 0; i < NUM_ENTRY; i = i + 1) begin
+            target_nxt[i] = target[i];
+        end
+
+        if (miss && BranchTaken_i) begin
+            target_nxt[write_index] = { WriteTarget_i[31:2], 2'b00 };
+        end
+    end
+
+    always @* begin
+        for (i = 0; i < NUM_ENTRY; i = i + 1) begin
             predict_nxt[i] = predict[i];
         end
 
         if (miss) begin
             if (BranchTaken_i) begin
                 case (predict[write_index])
-                    S_NONTAKEN, S_NEAR_NONTAKEN: begin
+                    S_NONTAKEN : begin
                         predict_nxt[write_index] = S_NEAR_NONTAKEN;
                     end
                     S_NEAR_NONTAKEN : begin
                         predict_nxt[write_index] = S_NEAR_TAKEN;
                     end
-                    default : begin
+                    S_NEAR_TAKEN : begin
+                        predict_nxt[write_index] = S_TAKEN;
+                    end
+                    S_TAKEN : begin
                         predict_nxt[write_index] = S_TAKEN;
                     end
                 endcase
             end
             else begin
                 case (predict[write_index])
-                    default : begin
+                    S_NONTAKEN : begin
+                        predict_nxt[write_index] = S_NONTAKEN;
+                    end
+                    S_NEAR_NONTAKEN : begin
                         predict_nxt[write_index] = S_NONTAKEN;
                     end
                     S_NEAR_TAKEN : begin
@@ -77,12 +98,12 @@ module BrPred_local_2bit (
     always @(posedge clk) begin
         for (i = 0; i < NUM_ENTRY; i = i + 1) begin
             if (~rst_n) begin
-                predict[i] <= S_NEAR_TAKEN;
+                predict[i] <= S_NEAR_NONTAKEN;
+                target[i]  <= 0;
             end
             else begin
-                if (miss) begin
-                    predict[i] <= predict_nxt[i];
-                end
+                predict[i] <= predict_nxt[i];
+                target[i]  <= target_nxt[i];
             end
         end
     end

@@ -1,7 +1,8 @@
 `include "RISCV_Pipeline.v"
 `include "cache_sram_2way.v"
-`include "I_cache_2way.v"
+// `include "I_cache_2way.v"
 `include "D_cache_2way.v"
+`include "cache_2way.v"
 
 // Top module of your design, you cannot modify this module!!
 module CHIP (	clk,
@@ -113,20 +114,37 @@ wire [31:0] PC;
         .mem_ready_i  (mem_ready_D)
 	);
 
+	// I_cache I_cache(
+    //     .clk        (clk)         ,
+    //     .proc_reset_i (~rst_n)      ,
+    //     .proc_read_i  (ICACHE_ren)  ,
+    //     .proc_write_i (ICACHE_wen)  ,
+    //     .proc_addr_i  (ICACHE_addr) ,
+    //     .proc_rdata_o (ICACHE_rdata),
+    //     .proc_wdata_i (ICACHE_wdata),
+    //     .proc_stall_o (ICACHE_stall),
+    //     .mem_read_o   (mem_read_I)  ,
+    //     .mem_write_o  (mem_write_I) ,
+    //     .mem_addr_o   (mem_addr_I)  ,
+    //     .mem_wdata_o  (mem_wdata_I) ,
+    //     .mem_rdata_i  (mem_rdata_I) ,
+    //     .mem_ready_i  (mem_ready_I)
+	// );
+	
 	I_cache I_cache(
         .clk        (clk)         ,
-        .proc_reset_i (~rst_n)      ,
-        .proc_read_i  (ICACHE_ren)  ,
-        .proc_write_i (ICACHE_wen)  ,
-        .proc_addr_i  (ICACHE_addr) ,
-        .proc_rdata_o (ICACHE_rdata),
-        .proc_wdata_i (ICACHE_wdata),
-        .proc_stall_o (ICACHE_stall),
-        .mem_read_o   (mem_read_I)  ,
-        .mem_write_o  (mem_write_I) ,
-        .mem_addr_o   (mem_addr_I)  ,
-        .mem_wdata_o  (mem_wdata_I) ,
-        .mem_rdata_i  (mem_rdata_I) ,
-        .mem_ready_i  (mem_ready_I)
+        .proc_reset (~rst_n)      ,
+        .proc_read  (ICACHE_ren)  ,
+        .proc_write (ICACHE_wen)  ,
+        .proc_addr  (ICACHE_addr[30:1]) ,
+        .proc_rdata (ICACHE_rdata),
+        .proc_wdata (ICACHE_wdata),
+        .proc_stall (ICACHE_stall),
+        .mem_read   (mem_read_I)  ,
+        .mem_write  (mem_write_I) ,
+        .mem_addr   (mem_addr_I)  ,
+        .mem_wdata  (mem_wdata_I) ,
+        .mem_rdata  (mem_rdata_I) ,
+        .mem_ready  (mem_ready_I)
 	);
 endmodule
