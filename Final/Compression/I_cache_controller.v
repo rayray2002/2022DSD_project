@@ -55,17 +55,18 @@ reg [2:0] state_nxt;
 // compression
 wire last_word;
 wire compressed;
-reg fetch_next, fetch_next_nxt;
+reg fetch_next, fetch_next_nxt, fetch_next_stall, fetch_next_stall_nxt;
 reg [30:0] sram_addr;
 reg [31:0] sram_data_word;
 reg [15:0] prev_last_half_word;
 
 assign last_word = (proc_addr_offset == 3'b111);
-assign compressed = ~((~proc_addr_i[0] ? sram_data_word[25:24] : sram_data_word[9:8]) == 2'b11);
+// assign compressed = ~((~proc_addr_i[0] ? sram_data_word[25:24] : sram_data_word[9:8]) == 2'b11);
+assign compressed = ~(sram_data_word[25:24] == 2'b11);
 
 always @* begin
     if (fetch_next) begin
-        proc_rdata_o = {sram_data_word[31:16], prev_last_half_word};
+        proc_rdata_o = {prev_last_half_word, sram_data[31:16]};
         sram_addr = (proc_addr_i >> 1) + 1;
     end
     else begin
@@ -96,17 +97,19 @@ cache_sram_2way cache_sram_2way_U(
 always @* begin
     state_nxt = state;
     fetch_next_nxt = fetch_next;
+    fetch_next_stall_nxt = fetch_next_stall;
     case (state)
         STATE_IDLE: begin
             if (proc_access && !sram_hit) begin
                 state_nxt = STATE_ALLOCATE;
             end
-            if (last_word & ~compressed) begin
+            if (last_word & ~compressed & ~fetch_next) begin
                 state_nxt = STATE_NEXTLINE;
                 fetch_next_nxt = 1;
             end else begin
                 fetch_next_nxt = 0;
             end
+            fetch_next_stall_nxt = 1;
         end
 
         // STATE_WRITEBACK: begin
@@ -131,6 +134,8 @@ always @* begin
 
         STATE_READY: begin
             state_nxt = STATE_IDLE;
+            if (fetch_next)
+                fetch_next_stall_nxt = 0;
         end
     endcase
 end
@@ -140,13 +145,15 @@ always @(posedge clk) begin
     if (proc_reset_i) begin
         state <= STATE_IDLE;
         fetch_next <= 0;
+        fetch_next_stall <= 1;
         prev_last_half_word <= 0;
     end
     else begin
         state <= state_nxt;
         fetch_next <= fetch_next_nxt;
+        fetch_next_stall <= fetch_next_stall_nxt;
         if (~fetch_next)
-            prev_last_half_word <= sram_data_word[15:0];
+            prev_last_half_word <= sram_data_word[31:16];
     end
 end
 
@@ -167,9 +174,13 @@ always @* begin
         //     mem_addr_o  = { sram_tag, proc_addr_index };
         // end
 
+        // STATE_NEXTLINE: begin
+        // end
+
         STATE_ALLOCATE: begin
             mem_read_o  = 1;
-            mem_addr_o  = proc_addr_i[30:3];
+            // mem_addr_o  = proc_addr_i[30:3];
+            mem_addr_o  = sram_addr[29:2];
         end
 
         STATE_READY: begin
@@ -181,28 +192,28 @@ end
 
 //// Combinational Logic ////
 assign proc_access      = proc_read_i || proc_write_i;
-assign proc_stall_o     = proc_access && !sram_hit;
+assign proc_stall_o     = proc_access && (!sram_hit || (last_word & ~compressed & fetch_next_stall));
 
 assign mem_wdata_o      = sram_data;
 
 // wire [127:0] sram_big_endian;
 // assign sram_big_endian = {sram_data[7:0], sram_data[15:8], sram_data[23:16], sram_data[31:24], sram_data[39:32], sram_data[47:40], sram_data[55:48], sram_data[63:56], sram_data[71:64], sram_data[79:72], sram_data[87:80], sram_data[95:88], sram_data[103:96], sram_data[111:104], sram_data[119:112], sram_data[127:120]};
 always @* begin
-
-    case(proc_addr_offset>>1)
-        2'b00: sram_data_word = sram_data[ 31: 0];
-        2'b01: sram_data_word = sram_data[ 63:32];
-        2'b10: sram_data_word = sram_data[ 95:64];
-        2'b11: sram_data_word = sram_data[127:96];
-        // 3'b000: sram_data_word = sram_data[ 31:  0];
-        // // 3'b001: sram_data_word = sram_data[ 47: 16];
-        // 3'b001: sram_data_word = {sram_data[ 47: 32], sram_data[ 31: 16]};
-        // 3'b010: sram_data_word = sram_data[ 63: 32];
-        // 3'b011: sram_data_word = {sram_data[ 79: 64], sram_data[ 63: 48]};
-        // 3'b100: sram_data_word = sram_data[ 95: 64];
-        // 3'b101: sram_data_word = {sram_data[ 111: 96], sram_data[ 95: 80]};
-        // 3'b110: sram_data_word = sram_data[127: 96];
-        // 3'b111: sram_data_word = {16'b0, sram_data[127:112]};
+    // case(proc_addr_offset>>1)
+    //     2'b00: sram_data_word = sram_data[ 31: 0];
+    //     2'b01: sram_data_word = sram_data[ 63:32];
+    //     2'b10: sram_data_word = sram_data[ 95:64];
+    //     2'b11: sram_data_word = sram_data[127:96];
+    // endcase
+    case(proc_addr_offset)
+        3'b000: sram_data_word = sram_data[ 31:  0];
+        3'b001: sram_data_word = {sram_data[ 15: 0], sram_data[ 63: 48]};
+        3'b010: sram_data_word = sram_data[ 63: 32];
+        3'b011: sram_data_word = {sram_data[ 47: 32], sram_data[ 95: 80]};
+        3'b100: sram_data_word = sram_data[ 95: 64];
+        3'b101: sram_data_word = {sram_data[ 79: 64], sram_data[ 127: 112]};
+        3'b110: sram_data_word = sram_data[127: 96];
+        3'b111: sram_data_word = {sram_data[111: 96], 16'b0};
     endcase
 end
 

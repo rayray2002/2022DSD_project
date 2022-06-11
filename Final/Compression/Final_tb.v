@@ -57,6 +57,8 @@ module Final_tb;
 	wire [15:0] duration;
 	wire finish;	
 
+	integer cycle_count = 0;
+
 	// Note the design is connected at testbench, include:
 	// 1. CHIP (RISCV + D_cache + I_chache)
 	// 2. slow memory for data
@@ -151,10 +153,14 @@ module Final_tb;
 	 	$finish;
 	end
 		
-	always #(`CYCLE*0.5) clk = ~clk;
+	always #(`CYCLE*0.5) begin
+		cycle_count = cycle_count + 1;
+		clk = ~clk;
+	end
 	
 	always@(finish)
-	    if(finish)
-	       #(`CYCLE) $finish;		   
-	
+	    if(finish) begin
+			$display("cycle_count = %d", cycle_count);
+	    	#(`CYCLE) $finish;		   
+		end
 endmodule

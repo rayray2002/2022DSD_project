@@ -7,14 +7,15 @@ module Decompressor (
     reg [15:0] half_inst;
 
     always @ (*) begin
-        half_inst = ~PC_2 ? inst_raw[15:0] : inst_raw[31:16];
-        if (half_inst[1:0] == 2'b11) begin //uncompressed
+        // half_inst = ~PC_2 ? inst_raw[15:0] : inst_raw[31:16];
+        half_inst = inst_raw[15:0];
+
+        if (inst_raw[1:0] == 2'b11) begin //uncompressed
             compr = 0; //PC + 4
             inst = inst_raw;
         end else begin
             compr = 1; //PC + 2
             // half_inst = ~PC_2 ? inst_raw[15:0] : inst_raw[31:16];
-            // half_inst = inst_raw[15:0];
             // half_inst = inst_raw[31:16];
       
             case ({half_inst[15:13], half_inst[1:0]})
