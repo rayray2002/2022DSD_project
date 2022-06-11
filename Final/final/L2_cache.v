@@ -34,30 +34,30 @@ module L2_cache(
     input          proc_reset;
     /*for I_mem*/
     // processor interface
-    input          proc_read_I, proc_write_I;
-    input   [27:0] proc_addr_I;
-    input   [127:0] proc_wdata_I;
-    output         proc_stall_I;
-    output reg [127:0] proc_rdata_I;
+    input               proc_read_I, proc_write_I;
+    input       [27:0]  proc_addr_I;
+    input       [127:0] proc_wdata_I;
+    output              proc_stall_I;
+    output reg  [127:0] proc_rdata_I;
     // memory interface
-    input  [127:0] mem_rdata_I;
-    input          mem_ready_I;
-    output         mem_read_I, mem_write_I;
-    output reg [27:0] mem_addr_I;
-    output reg [127:0] mem_wdata_I;
+    input       [127:0] mem_rdata_I;
+    input               mem_ready_I;
+    output              mem_read_I, mem_write_I;
+    output reg  [27:0]  mem_addr_I;
+    output reg  [127:0] mem_wdata_I;
     /*for D_mem*/
     // processor interface
-    input          proc_read_D, proc_write_D;
-    input   [27:0] proc_addr_D;
-    input   [127:0] proc_wdata_D;
-    output         proc_stall_D;
-    output reg [127:0] proc_rdata_D;
+    input               proc_read_D, proc_write_D;
+    input       [27:0]  proc_addr_D;
+    input       [127:0] proc_wdata_D;
+    output              proc_stall_D;
+    output reg  [127:0] proc_rdata_D;
     // memory interface
-    input  [127:0] mem_rdata_D;
-    input          mem_ready_D;
-    output         mem_read_D, mem_write_D;
-    output reg [27:0] mem_addr_D;
-    output reg [127:0] mem_wdata_D;
+    input       [127:0] mem_rdata_D;
+    input               mem_ready_D;
+    output              mem_read_D, mem_write_D;
+    output reg  [27:0]  mem_addr_D;
+    output reg  [127:0] mem_wdata_D;
     //params
     parameter TAG_WIDTH = 23;
     parameter BLOCK_NUMBER = 32;
@@ -98,9 +98,15 @@ module L2_cache(
     assign mem_index_D = mem_addr_D[BLOCK_WIDTH-1:0];
     assign mem_index_I = mem_addr_I[BLOCK_WIDTH-1:0];
     // proc tag
-    // wire [TAG_WIDTH-1:0] block_tag_D;
-    // wire [TAG_WIDTH-1:0] block_tag_I;
-    // assign block_tag_D = proc_addr_D[27:BLOCK_WIDTH];
+    wire [TAG_WIDTH-1:0] block_tag_D;
+    wire [TAG_WIDTH-1:0] block_tag_I;
+    assign block_tag_D = proc_addr_D[27:BLOCK_WIDTH];
+    assign block_tag_I = proc_addr_I[27:BLOCK_WIDTH];
+    // mem tag
+    wire [TAG_WIDTH-1:0] mem_tag_D;
+    wire [TAG_WIDTH-1:0] mem_tag_I;
+    assign mem_tag_D = mem_addr_D[27:BLOCK_WIDTH];
+    assign mem_tag_I = mem_addr_I[27:BLOCK_WIDTH];
 
     always@(*)
     begin
@@ -137,11 +143,11 @@ module L2_cache(
     always@(*)
     begin
         //proc_rdata_D logic (compare to dm, we need to search by tag)
-        if (proc_addr_D[27:BLOCK_WIDTH] == block_tag[block_index_D][TAG_WIDTH-1:0] && block_source[block_index_D][0])
+        if (block_tag_D == block_tag[block_index_D][TAG_WIDTH-1:0] && block_source[block_index_D][0])
         begin
             proc_rdata_D = block_data[block_index_D][127:0];
         end
-        else if (proc_addr_D[27:BLOCK_WIDTH] == block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH] && block_source[block_index_D][1])
+        else if (block_tag_D == block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH] && block_source[block_index_D][1])
         begin
             proc_rdata_D = block_data[block_index_D][255:128];
         end
@@ -173,8 +179,8 @@ module L2_cache(
         //writemiss_D logic
         if(proc_write_D)
         begin
-            writemiss_D_rear = ((block_tag[block_index_D][TAG_WIDTH-1:0] == proc_addr_D[27:BLOCK_WIDTH]) && block_valid[block_index_D][0] && block_source[block_index_D][0]) ? 1 : 0;
-            writemiss_D_front = ((block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH] == proc_addr_D[27:BLOCK_WIDTH]) && block_valid[block_index_D][1] && block_source[block_index_D][1]) ? 1 : 0;
+            writemiss_D_rear = ((block_tag[block_index_D][TAG_WIDTH-1:0] == block_tag_D) && block_valid[block_index_D][0] && block_source[block_index_D][0]) ? 1 : 0;
+            writemiss_D_front = ((block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH] == block_tag_D) && block_valid[block_index_D][1] && block_source[block_index_D][1]) ? 1 : 0;
             writemiss_D = ~(writemiss_D_rear | writemiss_D_front);
         end
         else
@@ -199,8 +205,8 @@ module L2_cache(
         //readmiss_D logic
         if(proc_read_D)
         begin
-            readmiss_D_rear = ((block_tag[block_index_D][TAG_WIDTH-1:0] == proc_addr_D[27:BLOCK_WIDTH]) && block_valid[block_index_D][0] && block_source[block_index_D][0]) ? 1 : 0;
-            readmiss_D_front = ((block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH] == proc_addr_D[27:BLOCK_WIDTH]) && block_valid[block_index_D][1] &&block_source[block_index_D][1]) ? 1 : 0;
+            readmiss_D_rear = ((block_tag[block_index_D][TAG_WIDTH-1:0] == block_tag_D) && block_valid[block_index_D][0] && block_source[block_index_D][0]) ? 1 : 0;
+            readmiss_D_front = ((block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH] == block_tag_D) && block_valid[block_index_D][1] &&block_source[block_index_D][1]) ? 1 : 0;
             readmiss_D = ~(readmiss_D_rear | readmiss_D_front);
         end
         else
@@ -212,7 +218,7 @@ module L2_cache(
         //readmiss_I logic
         if(proc_read_I)
         begin
-            readmiss_I_rear = ((block_tag[block_index_I][TAG_WIDTH-1:0] == proc_addr_I[27:BLOCK_WIDTH]) && block_valid[block_index_I][0] &&(~block_source[block_index_I][0])) ? 1 : 0;
+            readmiss_I_rear = ((block_tag[block_index_I][TAG_WIDTH-1:0] == proc_addr_I[27:BLOCK_WIDTH]) && block_valid[block_index_I][0] && (~block_source[block_index_I][0])) ? 1 : 0;
             readmiss_I_front = ((block_tag[block_index_I][TAG_WIDTH*2-1:TAG_WIDTH] == proc_addr_I[27:BLOCK_WIDTH]) && block_valid[block_index_I][1] &&(~block_source[block_index_I][1])) ? 1 : 0;
             readmiss_I = ~(readmiss_I_rear | readmiss_I_front);
         end
@@ -236,24 +242,24 @@ module L2_cache(
             case(Q_NOW)
                 INITIAL:
                 begin
-                    Q_NEXT = (proc_reset)?RESET:INITIAL;
+                    Q_NEXT = (proc_reset) ? RESET : INITIAL;
                     readrequest_nxt = 1'b0;
                 end
                 RESET:
                 begin
-                    Q_NEXT = (~proc_reset)?PROCESS:RESET;
+                    Q_NEXT = (~proc_reset) ? PROCESS : RESET;
                     readrequest_nxt = 1'b0;
                 end
                 PROCESS:
                 begin
                     if(readmiss_I | writemiss_I)
                     begin
-                        Q_NEXT = (isdirty_I)?((source_I)?WRITE_D:WRITE_I):READ_I;
+                        Q_NEXT = (isdirty_I) ? ((source_I) ? WRITE_D : WRITE_I) : READ_I;
                         readrequest_nxt = 1'b0;
                     end
                     else if(readmiss_D | writemiss_D)
                     begin
-                        Q_NEXT = (isdirty_D)?((source_D)?WRITE_D:WRITE_I):READ_D;
+                        Q_NEXT = (isdirty_D) ? ((source_D) ? WRITE_D : WRITE_I) : READ_D;
                         readrequest_nxt = 1'b1;
                     end
                     else
@@ -264,22 +270,22 @@ module L2_cache(
                 end
                 WRITE_I:
                 begin
-                    Q_NEXT = (mem_ready_I)?((readrequest)?READ_D:READ_I):WRITE_I;
+                    Q_NEXT = (mem_ready_I) ? ((readrequest) ? READ_D : READ_I) : WRITE_I;
                     readrequest_nxt = readrequest;
                 end
                 READ_I:
                 begin
-                    Q_NEXT = (mem_ready_I)?PROCESS:READ_I;
+                    Q_NEXT = (mem_ready_I) ? PROCESS : READ_I;
                     readrequest_nxt = readrequest;
                 end
                 WRITE_D:
                 begin
-                    Q_NEXT = (mem_ready_D)?((readrequest)?READ_D:READ_I):WRITE_D;
+                    Q_NEXT = (mem_ready_D) ? ((readrequest) ? READ_D : READ_I) : WRITE_D;
                     readrequest_nxt = readrequest;
                 end
                 READ_D:
                 begin
-                    Q_NEXT = (mem_ready_D)?PROCESS:READ_D;
+                    Q_NEXT = (mem_ready_D) ? PROCESS : READ_D;
                     readrequest_nxt = readrequest;
                 end
                 default:
@@ -314,10 +320,10 @@ module L2_cache(
                     //block update (write hit)
                     if(proc_write_D && ~writemiss_D)
                     begin//only D write hit, since I is a read only cache
-                        if(proc_addr_D[27:BLOCK_WIDTH]==block_tag[block_index_D][TAG_WIDTH-1:0] && block_source[block_index_D][0])
+                        if(block_tag_D==block_tag[block_index_D][TAG_WIDTH-1:0] && block_source[block_index_D][0])
                         begin
                             block_dirty[block_index_D][0]           <= 1'b1;
-                            block_tag[block_index_D][TAG_WIDTH-1:0] <= proc_addr_D[27:BLOCK_WIDTH];
+                            block_tag[block_index_D][TAG_WIDTH-1:0] <= block_tag_D;
                             block_LRU[block_index_D]                <= 1'b1;
                             block_source[block_index_D][0]          <= 1'b1;
                             block_data[block_index_D][127:0]        <= proc_wdata_D;
@@ -325,7 +331,7 @@ module L2_cache(
                         else
                         begin
                             block_dirty[block_index_D][1]                       <= 1'b1;
-                            block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH]   <= proc_addr_D[27:BLOCK_WIDTH];
+                            block_tag[block_index_D][TAG_WIDTH*2-1:TAG_WIDTH]   <= block_tag_D;
                             block_LRU[block_index_D]                            <= 1'b0;
                             block_source[block_index_D][1]                      <= 1'b1;
                             block_data[block_index_D][255:128]                  <= proc_wdata_D;
@@ -347,23 +353,23 @@ module L2_cache(
                     begin//I and D both read hit
                         if(block_index_D==block_index_I)
                         begin//I and D both read same block
-                            block_LRU[block_index_D] <= (proc_addr_D[27:BLOCK_WIDTH] == block_tag[block_index_D][TAG_WIDTH-1:0]) ? 1'b0 : 1'b1;//treat D read hit as LRU
+                            block_LRU[block_index_D] <= (block_tag_D == block_tag[block_index_D][TAG_WIDTH-1:0]) ? 1'b0 : 1'b1;//treat D read hit as LRU
                         end
                         else
                         begin//I and D read different block
                             //D LRU update
-                            block_LRU[block_index_D] <= (proc_addr_D[27:BLOCK_WIDTH]==block_tag[block_index_D][TAG_WIDTH-1:0]) ? 1'b1 : 1'b0;
+                            block_LRU[block_index_D] <= (block_tag_D==block_tag[block_index_D][TAG_WIDTH-1:0]) ? 1'b1 : 1'b0;
                             //I LRU update
-                            block_LRU[block_index_I] <= (proc_addr_I[27:BLOCK_WIDTH]==block_tag[block_index_I][TAG_WIDTH-1:0]) ? 1'b1 : 1'b0;
+                            block_LRU[block_index_I] <= (block_tag_D==block_tag[block_index_I][TAG_WIDTH-1:0]) ? 1'b1 : 1'b0;
                         end
                     end
                     else if(proc_read_D && ~readmiss_D)
                     begin//only D read hit
-                        block_LRU[block_index_D] <= (proc_addr_D[27:BLOCK_WIDTH]==block_tag[block_index_D][TAG_WIDTH-1:0]) ?1'b1 : 1'b0;
+                        block_LRU[block_index_D] <= (block_tag_D==block_tag[block_index_D][TAG_WIDTH-1:0]) ?1'b1 : 1'b0;
                     end
                     else if(proc_read_I && ~readmiss_I)
                     begin//only I read hit
-                        block_LRU[block_index_I] <= (proc_addr_I[27:BLOCK_WIDTH]==block_tag[block_index_I][TAG_WIDTH-1:0]) ? 1'b1 : 1'b0;
+                        block_LRU[block_index_I] <= (block_tag_I==block_tag[block_index_I][TAG_WIDTH-1:0]) ? 1'b1 : 1'b0;
                     end
                     else
                     begin
@@ -376,23 +382,23 @@ module L2_cache(
                     //read miss for D
                     if(mem_ready_D)
                     begin
-                        if(~block_LRU[mem_addr_D[BLOCK_WIDTH-1:0]])
+                        if(~block_LRU[mem_index_D])
                         begin
-                            block_data[mem_addr_D[BLOCK_WIDTH-1:0]][127:0] <= mem_rdata_D;
-                            block_tag[mem_addr_D[BLOCK_WIDTH-1:0]][TAG_WIDTH-1:0] <= mem_addr_D[27:BLOCK_WIDTH];
-                            block_dirty[mem_addr_D[BLOCK_WIDTH-1:0]][0] <= 1'b0;
-                            block_valid[mem_addr_D[BLOCK_WIDTH-1:0]][0] <= 1'b1;
-                            block_LRU[mem_addr_D[BLOCK_WIDTH-1:0]] <= 1'b1;
-                            block_source[mem_addr_D[BLOCK_WIDTH-1:0]][0] <= 1'b1;
+                            block_data[mem_index_D][127:0] <= mem_rdata_D;
+                            block_tag[mem_index_D][TAG_WIDTH-1:0] <= mem_addr_D[27:BLOCK_WIDTH];
+                            block_dirty[mem_index_D][0] <= 1'b0;
+                            block_valid[mem_index_D][0] <= 1'b1;
+                            block_LRU[mem_index_D] <= 1'b1;
+                            block_source[mem_index_D][0] <= 1'b1;
                         end
                         else
                         begin
-                            block_data[mem_addr_D[BLOCK_WIDTH-1:0]][255:128] <= mem_rdata_D;
-                            block_tag[mem_addr_D[BLOCK_WIDTH-1:0]][TAG_WIDTH*2-1:TAG_WIDTH] <= mem_addr_D[27:BLOCK_WIDTH];
-                            block_dirty[mem_addr_D[BLOCK_WIDTH-1:0]][1] <= 1'b0;
-                            block_valid[mem_addr_D[BLOCK_WIDTH-1:0]][1] <= 1'b1;
-                            block_LRU[mem_addr_D[BLOCK_WIDTH-1:0]] <= 1'b0;
-                            block_source[mem_addr_D[BLOCK_WIDTH-1:0]][1] <= 1'b1;
+                            block_data[mem_index_D][255:128] <= mem_rdata_D;
+                            block_tag[mem_index_D][TAG_WIDTH*2-1:TAG_WIDTH] <= mem_tag_D;
+                            block_dirty[mem_index_D][1] <= 1'b0;
+                            block_valid[mem_index_D][1] <= 1'b1;
+                            block_LRU[mem_index_D] <= 1'b0;
+                            block_source[mem_index_D][1] <= 1'b1;
                         end
                     end
                     else
@@ -416,7 +422,7 @@ module L2_cache(
                         if(~block_LRU[mem_addr_I[BLOCK_WIDTH-1:0]])
                         begin
                             block_data[mem_index_I][127:0] <= mem_rdata_I;
-                            block_tag[mem_index_I][TAG_WIDTH-1:0] <= mem_addr_I[27:BLOCK_WIDTH];
+                            block_tag[mem_index_I][TAG_WIDTH-1:0] <= mem_tag_I;
                             block_dirty[mem_index_I][0] <= 1'b0;
                             block_valid[mem_index_I][0] <= 1'b1;
                             block_LRU[mem_index_I] <= 1'b1;
@@ -425,7 +431,7 @@ module L2_cache(
                         else
                         begin
                             block_data[mem_index_I][255:128] <= mem_rdata_I;
-                            block_tag[mem_index_I][TAG_WIDTH*2-1:TAG_WIDTH] <= mem_addr_I[27:BLOCK_WIDTH];
+                            block_tag[mem_index_I][TAG_WIDTH*2-1:TAG_WIDTH] <= mem_tag_I;
                             block_dirty[mem_index_I][1] <= 1'b0;
                             block_valid[mem_index_I][1] <= 1'b1;
                             block_LRU[mem_index_I] <= 1'b0;
@@ -436,11 +442,11 @@ module L2_cache(
                     begin
                         for(i=0; i<BLOCK_NUMBER; i=i+1)
                         begin
-                            block_data[i] <= block_data[i];
-                            block_tag[i] <= block_tag[i];
-                            block_dirty[i] <= block_dirty[i];
-                            block_valid[i] <= block_valid[i];
-                            block_LRU[i] <= block_LRU[i];
+                            block_data[i]   <= block_data[i];
+                            block_tag[i]    <= block_tag[i];
+                            block_dirty[i]  <= block_dirty[i];
+                            block_valid[i]  <= block_valid[i];
+                            block_LRU[i]    <= block_LRU[i];
                             block_source[i] <= block_source[i];
                         end
                     end
