@@ -76,7 +76,7 @@ module L2_cache(
     reg [1:0]               block_dirty     [0:BLOCK_NUMBER-1];//0==not dirty, 1==dirty
     reg [1:0]               block_source    [0:BLOCK_NUMBER-1];//0==from I_mem, 1==from D_mem
     reg                     block_LRU       [0:BLOCK_NUMBER-1];//0==data in [127:0], 1==data in [255:128]
-    reg [2:0] Q_NOW, Q_NEXT;
+    reg [2:0]               Q_NOW, Q_NEXT;
 
     integer i;
     //==== combinational circuit ==============================
