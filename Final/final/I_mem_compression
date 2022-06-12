@@ -93,8 +93,8 @@ C1_00_03_24   // 0x12c
 // 
 // 7FF00113   # 0x4     addi   sp, x0, 2047   # base address
 // 7FD10113   # 0x8     addi   sp, sp, 2045
-// 00000B13   # 0x10    addi s6, x0, 0        # location of array
-// 00300B93   # 0x14    addi s7, x0, 3        # n: total number to be sorted
+// 00000B13   # 0xc    addi s6, x0, 0        # location of array
+// 00300B93   # 0x10    addi s7, x0, 3        # n: total number to be sorted
 // 
 // 00000413   # 0x14    addi   s0, x0, 0      # start = 0
 // FFFB8493   # 0x18    addi   s1, s7, -1     # end = n-1

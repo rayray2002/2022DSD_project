@@ -67,7 +67,7 @@ module	TestBed(
 		end
 	end
 			
-	always@(*)	// FSM for test
+	always@(negedge clk)	// FSM for test
 	begin
 		finish = 1'b0;
 		case( curstate )
@@ -89,8 +89,11 @@ module	TestBed(
 							if( addr==`TestPort && wen && state==0 )
 							begin
 								nxtaddr = curaddr + 1;
-								if( data_modify != answer )
+								if( data_modify != answer ) begin
 									nxt_error_num = error_num + 8'd1;
+									$display("Error: %d:%d %d",curaddr, data_modify, answer);
+								end
+								$display("Write: %d:%d",duration, data_modify);
 							end
 							nxtstate = curstate;
 							if( curaddr==`CheckNum )	

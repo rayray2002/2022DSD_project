@@ -24,11 +24,11 @@ def increment(n, arr):
 
 # Modify number of sequence here
 # Note: nb >= 3 and nb <= 47 (if nb >= 48, there will be overflow)
-nb = 3
+nb = 16
 # Modify number of max increment
 # if (incre == 2) generate f(i), f(i)+1, f(i)+2
 # Note: nb >= 0 and nb*incre <= 1023 (size of slow memory is 1024 words)
-incre = 1
+incre = 5
 
 #assertion
 assert(nb >= 3)

@@ -36,8 +36,8 @@ module cache_sram_2way (
 
     assign way = hit[0] ? 0 : (hit[1] ? 1 : lru[index]);
 
-    assign hit[0] = sram[index][0][155]&(sram[index][0][153:128] == tag_i);
-    assign hit[1] = sram[index][1][155]&(sram[index][1][153:128] == tag_i);
+    assign hit[0] = sram[index][0][155] & (sram[index][0][153:128] == tag_i);
+    assign hit[1] = sram[index][1][155] & (sram[index][1][153:128] == tag_i);
 
 //// Sequential Logic ////
     always @(posedge clk) begin

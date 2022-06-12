@@ -1,6 +1,6 @@
 `include "config.v"
 
-`define BP
+// `define BP
 `define COMPRESSION
 
 module RISCV_Pipeline (
@@ -78,7 +78,6 @@ module RISCV_Pipeline (
     assign PC = IF_pc_o;
 
 // IF stage
-    assign IF_compressed = (IF_instruction_raw[1:0] != 2'b11);
     assign IF_jal        = (IF_instruction[4:3] == 2'b01);
     assign IF_jalr       = (IF_instruction[4:2] == 3'b001);
     assign IF_branch     = IF_compressed ? ({IF_instruction_raw[15:14], IF_instruction_raw[1:0]} == 4'b1101) : (IF_instruction_raw[6:2] == 5'b11000);
@@ -119,6 +118,7 @@ module RISCV_Pipeline (
         .inst_raw(IF_instruction_raw),
         .inst    (IF_instruction    )
     );
+    assign IF_compressed = (IF_instruction_raw[1:0] != 2'b11);
 `else
     assign IF_instruction      = IF_instruction_raw;
     assign IF_compressed = 1'b0;
@@ -338,7 +338,7 @@ module RISCV_Pipeline (
         .RDaddr_i   (EX_RDaddr         ),
         .RDaddr_o   (MEM_RDaddr        ),
         .Stall_i    (MEM_Stall         ),
-        .flush_i    (EX_miss           )
+        .flush_i    (0           )
     );
 
 // Mem stage

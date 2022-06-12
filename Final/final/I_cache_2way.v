@@ -200,7 +200,8 @@ module I_cache (
     assign sram_tag   = sram_rdata[153:128];
     assign sram_data  = sram_rdata[127:0];
 
-    assign proc_addr_tag    = proc_addr_i[30:5];
+    // assign proc_addr_tag    = proc_addr_i[30:5];
+    assign proc_addr_tag    = sram_addr[29:4];
     assign proc_addr_index  = proc_addr_i[4:3];
     assign proc_addr_offset = proc_addr_i[2:0];
 
