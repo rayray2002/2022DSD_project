@@ -7,14 +7,16 @@
 
 `ifdef COMPRESS
 	`define END_PC 320
+	`define IMEM_INIT "I_mem_compression"
+
 `else
 	`define END_PC 400
+	`define IMEM_INIT "I_mem"
 `endif
 
 
 `define CYCLE 3.5 // You can modify your clock frequency
 
-`define IMEM_INIT "I_mem"
 `define DMEM_INIT "D_mem"
 `define GOLDEN    "D_gold"
 `define SDFFILE   "./CHIP_syn.sdf"	// Modify your SDF file name
@@ -129,7 +131,7 @@ module Final_tb;
 	 	$display("-----------------------------------------------------\n");
 
      
-		#(`CYCLE*1000000) // calculate clock cycles for all operation (you can modify it)
+		#(`CYCLE*2500) // calculate clock cycles for all operation (you can modify it)
 		$display("============================================================================");
 		$display("\n           Error!!! There is something wrong with your code ...!          ");
 		$display("\n                       The test result is .....FAIL                     \n");

@@ -148,10 +148,10 @@ module L2cache (
     always @* begin
         memi_read  = 0;
         memi_write = 0;
-        memi_addr  = sram_addr;
+        memi_addr  = L1i_addr_i;
         memd_read  = 0;
         memd_write = 0;
-        memd_addr  = sram_addr;
+        memd_addr  = L1d_addr_i;
         sram_write = 0;
 
         case (state)
@@ -161,17 +161,14 @@ module L2cache (
 
             STATE_WRITEBACK_D : begin
                 memd_write = 1;
-                // memd_addr  = sram_addr;
             end
 
             STATE_ALLOCATE_I : begin
                 memi_read = 1;
-                // memi_addr = proc_addr_i[29:2];
             end
 
             STATE_ALLOCATE_D : begin
                 memd_read = 1;
-                // memi_addr = proc_addr_i[29:2];
             end
 
             STATE_READY_I, STATE_READY_D : begin
@@ -217,7 +214,11 @@ module L2cache (
         end
         else begin
             // write hit
-            sram_wdata[151] = 1; // dirty
+            // sram_wdata[151] = 1; // dirty
+            if (I_access)
+                sram_wdata = { I_access, 2'b11, sram_tag, L1i_wdata_i };
+            else
+                sram_wdata = { I_access, 2'b11, sram_tag, L1d_wdata_i };
         end
     end
 endmodule

@@ -5,9 +5,10 @@
 `include "D_cache_2way.v"
 `include "L2cache.v"
 
-// `define L2
+`define L2
+
 // Top module of your design, you cannot modify this module!!
-module CHIP (	clk,
+module CHIP ( clk,
               rst_n,
               //----------for slow_memD------------
               mem_read_D,
