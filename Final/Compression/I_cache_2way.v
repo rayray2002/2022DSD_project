@@ -1,4 +1,4 @@
-module I_cache_ (
+module I_cache (
     input              clk         ,
     // processor interface
     input              proc_reset_i,
@@ -58,7 +58,7 @@ module I_cache_ (
     assign last_word  = (proc_addr_offset == 3'b111);
     assign compressed = ~(sram_data_word[25:24] == 2'b11);
 
-    always @* begin
+    always @(*) begin
         if (fetch_next) begin
             proc_rdata_o = {prev_last_half_word, sram_data[31:16]};
             sram_addr    = (proc_addr_i >> 1) + 1'b1;
@@ -206,7 +206,7 @@ module I_cache_ (
 
     always @* begin
         // valid(1), dirty(1), tag(26), word0(32), word1(32), word2(32), word3(32)
-        sram_wdata        = { 2'b11, proc_addr_tag, sram_data };
+        sram_wdata        = { 2'b10, proc_addr_tag, sram_data };
         sram_wdata[154]   = 0; // not dirty
         sram_wdata[127:0] = mem_rdata_i;
     end

@@ -25,7 +25,7 @@ module RISCV_Pipeline (
 );
 
 // IF
-    wire [31:0] IF_pc_i, IF_pc_o, IF_instr, IF_instr_raw, IF_pc_plus, IF_pc_imm, IF_imm, IF_BTB_addr;
+    wire [31:0] IF_pc_i, IF_pc_o, IF_instr, IF_instr_raw, IF_pc_plus, IF_pc_plus2, IF_pc_plus4, IF_pc_imm, IF_imm, IF_BTB_addr4, IF_BTB_addr2, IF_BTB_addr;
     wire        IF_jal, IF_jalr, IF_BPHit, IF_compressed, IF_branch;
 
 // ID
@@ -47,7 +47,7 @@ module RISCV_Pipeline (
     wire [ 4:0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
     wire [ 3:0] EX_ALUCtrl;
     wire [ 1:0] EX_ALUOp, EX_FowardA, EX_FowardB;
-    wire        EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr, EX_miss, EX_BPHit;
+    wire        EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr, EX_miss, EX_BPHit, EX_BPHit2, EX_BPHit4;
 
 // Mem
     wire signed [31:0] MEM_ALUResult, MEM_RS2data, MEM_MemData;
@@ -78,39 +78,30 @@ module RISCV_Pipeline (
     assign PC = IF_pc_o;
 
 // IF stage
-// MUX32 MUX_PC (
-//           .data1_i (IF_pc4),
-//           .data2_i (ID_branch_addr),
-//           .select_i(Flush),
-//           .data_o (IF_pc_i)
-//       );
-
-// Adder Add_PC (
-//           .data1_in(IF_pc_o),
-//           .data2_in(4 ),
-//           .data_o (IF_pc4)
-//       );
-
-    assign IF_jal    = (IF_instr[4:3] == 2'b01);
-    assign IF_jalr   = (IF_instr[4:2] == 3'b001);
-    assign IF_branch = (IF_instr[6:2] == 5'b11000);
+    assign IF_compressed = (IF_instr_raw[1:0] != 2'b11);
+    assign IF_jal        = (IF_instr[4:3] == 2'b01);
+    assign IF_jalr       = (IF_instr[4:2] == 3'b001);
+    assign IF_branch     = IF_compressed ? ({IF_instr_raw[15:14], IF_instr_raw[1:0]} == 4'b1101) : (IF_instr_raw[6:2] == 5'b11000);
     PC_Control PC_Control (
-        .imm_ext         (IF_imm           ),
-        .PC_i            (IF_pc_o          ),
-        .PC_branch       (EX_imm_addr      ),
-        .PC_branch_target(IF_BTB_addr      ),
-        .PC_jalr         (EX_jalr_addr     ),
-        .PC_jal          (ID_jal_addr      ),
-        .jal_i           (ID_jal           ),
-        .jalr_i          (EX_jalr          ),
-        .IF_jalr_i       (IF_jalr | ID_jalr),
-        .IF_jal_i        (IF_jal           ),
-        .branch_pred     (IF_BPHit         ),
-        .compressed      (IF_compressed    ),
-        .miss            (EX_miss          ),
-        .PC_o            (IF_pc_i          ),
-        .PC_plus_o       (IF_pc_plus       )
-        // .PC_imm_o        (IF_pc_imm        )
+        .imm_ext         (IF_imm       ),
+        .PC_i            (IF_pc_o      ),
+        .PC_branch       (EX_imm_addr  ),
+        .PC_branch_target(IF_BTB_addr  ),
+        .PC_jalr         (EX_jalr_addr ),
+        .PC_jal          (ID_jal_addr  ),
+        .jal_i           (ID_jal       ),
+        .jalr_i          (EX_jalr      ),
+        // .IF_jalr_i       (IF_jalr | ID_jalr),
+        // .IF_jal_i        (IF_jal           ),
+        .IF_jalr_i       (ID_jalr      ),
+        .IF_jal_i        (1'b0         ),
+        .branch_pred     (IF_BPHit     ),
+        .compressed      (IF_compressed),
+        .miss            (EX_miss      ),
+        .PC_o            (IF_pc_i      ),
+        .PC_plus2_o      (IF_pc_plus2  ),
+        .PC_plus4_o      (IF_pc_plus4  ),
+        .PC_plus_o       (IF_pc_plus   )
     );
 
     PC PC_module (
@@ -125,10 +116,9 @@ module RISCV_Pipeline (
 `ifdef COMPRESS
 
     Decompressor Decompressor (
-        .PC_2    (IF_pc_o[1]   ),
-        .inst_raw(IF_instr_raw ),
-        .inst    (IF_instr     ),
-        .compr   (IF_compressed)
+        .PC_2    (IF_pc_o[1]  ),
+        .inst_raw(IF_instr_raw),
+        .inst    (IF_instr    )
     );
 `else
     assign IF_instr      = IF_instr_raw;
@@ -137,19 +127,25 @@ module RISCV_Pipeline (
 
 `ifdef BP
 
-    Prediction #(.NUM_INDEX_BIT(4)) Prediction (
-        .clk          (clk         ),
-        .rst_n        (rst_n       ),
-        .branch       (IF_branch   ),
-        .BranchTaken_i(Branch_taken),
-        .miss         (EX_miss     ),
-        .WriteAddr_i  (EX_pc_plus  ),
-        .WriteTarget_i(EX_imm_addr ),
+    Prediction Prediction (
+        .clk           (clk         ),
+        .rst_n         (rst_n       ),
+        // .branch        (IF_branch   ),
+        .BranchTaken_i (Branch_taken),
+        .miss          (EX_miss     ),
+        .WriteAddr_i   (EX_pc_plus  ),
+        .WriteTarget_i (EX_imm_addr ),
         
-        .ReadAddr_i   (IF_pc_plus  ),
-        .ReadTarget_o (IF_BTB_addr ),
-        .Hit_o        (IF_BPHit    )
+        .ReadAddr_2_i  (IF_pc_plus2 ),
+        .ReadTarget_2_o(IF_BTB_addr2),
+        .Hit_2_o       (IF_BPHit2   ),
+        
+        .ReadAddr_4_i  (IF_pc_plus4 ),
+        .ReadTarget_4_o(IF_BTB_addr4),
+        .Hit_4_o       (IF_BPHit4   )
     );
+    assign IF_BTB_addr = IF_compressed ? IF_BTB_addr2 : IF_BTB_addr4;
+    assign IF_BPHit    = IF_branch & (IF_compressed ? IF_BPHit2    : IF_BPHit4);
 `else
     assign IF_BPHit = 1'b0;
 `endif

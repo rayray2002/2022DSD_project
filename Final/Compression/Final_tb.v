@@ -10,23 +10,27 @@
 
 // For different condition (I_mem, TestBed)
 `ifdef noHazard
-`define IMEM_INIT "I_mem_noHazard"
+`define IMEM_INIT "./test/I_mem_noHazard"
 `include "./test/TestBed_noHazard.v"
 `endif
 `ifdef hasHazard
-`define IMEM_INIT "I_mem_hasHazard"
+`define IMEM_INIT "./test/I_mem_hasHazard"
 `include "./test/TestBed_hasHazard.v"
 `endif
 `ifdef BrPred
-`define IMEM_INIT "I_mem_BrPred"
+`define IMEM_INIT "./test/I_mem_BrPred"
 `include "./test/TestBed_BrPred.v"
 `endif
+`ifdef L2Cache
+`define IMEM_INIT "./test/I_mem_L2Cache"
+`include "./test/TestBed_L2Cache.v"
+`endif
 `ifdef compression
-`define IMEM_INIT "I_mem_compression"
+`define IMEM_INIT "./test/I_mem_compression"
 `include "./test/TestBed_compression.v"
 `endif
 `ifdef decompression
-`define IMEM_INIT "I_mem_decompression"
+`define IMEM_INIT "./test/I_mem_decompression"
 `include "./test/TestBed_compression.v"
 `endif
 
@@ -139,10 +143,10 @@ module Final_tb ();
 
         clk = 0;
         rst_n = 1'b1;
-        #(`CYCLE*0.2) rst_n = 1'b0;
+        #(`CYCLE*1.2) rst_n = 1'b0;
         #(`CYCLE*8.5) rst_n = 1'b1;
 
-        #(`CYCLE*4000) // calculate clock cycles for all operation (you can modify it)
+        #(`CYCLE*80000) // calculate clock cycles for all operation (you can modify it)
             $display("============================================================================");
         $display("\n           Error!!! There is something wrong with your code ...!          ");
         $display("\n                       The test result is .....FAIL                     \n");
@@ -154,7 +158,7 @@ module Final_tb ();
         $finish;
     end
 
-    // #(`CYCLE) 
+    // #(`CYCLE)
     always #(`CYCLE*0.5) begin
         cycle_count = cycle_count + 1;
         clk         = ~clk;

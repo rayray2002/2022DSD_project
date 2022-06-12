@@ -1,17 +1,19 @@
 module Prediction (
-    input         clk          ,
-    input         rst_n        ,
-    input         branch       ,
-    input         miss         ,
-    input         BranchTaken_i,
-    input  [31:0] WriteAddr_i  ,
-    input  [31:0] WriteTarget_i,
-    input  [31:0] ReadAddr_i   ,
-    output [31:0] ReadTarget_o ,
-    output        Hit_o
+    input         clk           ,
+    input         rst_n         ,
+    input         miss          ,
+    input         BranchTaken_i ,
+    input  [31:0] WriteAddr_i   ,
+    input  [31:0] WriteTarget_i ,
+    input  [31:0] ReadAddr_2_i  ,
+    output [31:0] ReadTarget_2_o,
+    input  [31:0] ReadAddr_4_i  ,
+    output [31:0] ReadTarget_4_o,
+    output        Hit_2_o       ,
+    output        Hit_4_o
 );
 
-    parameter  NUM_INDEX_BIT = 3                 ;
+    parameter  NUM_INDEX_BIT = 4                 ;
     localparam NUM_ENTRY     = 1 << NUM_INDEX_BIT;
 
     localparam S_NONTAKEN      = 0;
@@ -25,22 +27,30 @@ module Prediction (
     reg [1:0] predict    [0:NUM_ENTRY-1];
     reg [1:0] predict_nxt[0:NUM_ENTRY-1];
 
-    wire [NUM_INDEX_BIT-1:0] read_index ;
-    wire [NUM_INDEX_BIT-1:0] write_index;
+    wire [NUM_INDEX_BIT-1:0] read_index_2;
+    wire [NUM_INDEX_BIT-1:0] read_index_4;
+    wire [NUM_INDEX_BIT-1:0] write_index ;
 
     integer i;
 
 
 //// Combinational ////
 
-    assign ReadTarget_o = target[read_index];
+    assign ReadTarget_2_o = target[read_index_2];
+    assign ReadTarget_4_o = target[read_index_4];
 
-    assign Hit_o = branch &
-        (predict[read_index] == S_TAKEN
-            || predict[read_index] == S_NEAR_TAKEN);
+    assign Hit_2_o =
+        (predict[read_index_2] == S_TAKEN
+            || predict[read_index_2] == S_NEAR_TAKEN);
 
-    assign read_index  = ReadAddr_i[NUM_INDEX_BIT+1:2];
-    assign write_index = WriteAddr_i[NUM_INDEX_BIT+1:2];
+    assign Hit_4_o =
+        (predict[read_index_4] == S_TAKEN
+            || predict[read_index_4] == S_NEAR_TAKEN);
+
+
+    assign read_index_2 = ReadAddr_2_i[NUM_INDEX_BIT+1:2];
+    assign read_index_4 = ReadAddr_4_i[NUM_INDEX_BIT+1:2];
+    assign write_index  = WriteAddr_i[NUM_INDEX_BIT+1:2];
 
     always @* begin
         for (i = 0; i < NUM_ENTRY; i = i + 1) begin
