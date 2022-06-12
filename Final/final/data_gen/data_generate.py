@@ -3,7 +3,7 @@ import numpy as np
 
 ### modify (base, n) by yourself
 base = 0     # base >=0
-n = 3      # 0< base+n <=256
+n = 2      # 0< base+n <=256
 
 
 def getbin(x, n_bit):

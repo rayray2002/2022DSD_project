@@ -1,6 +1,6 @@
 `include "config.v"
 
-// `define BP
+`define BP
 `define COMPRESSION
 
 module RISCV_Pipeline (
@@ -120,8 +120,8 @@ module RISCV_Pipeline (
     );
     assign IF_compressed = (IF_instruction_raw[1:0] != 2'b11);
 `else
-    assign IF_instruction      = IF_instruction_raw;
-    assign IF_compressed = 1'b0;
+    // assign IF_instruction      = IF_instruction_raw;
+    // assign IF_compressed = 1'b0;
 `endif
 
 `ifdef BP

@@ -3,7 +3,7 @@
 13_01_F0_7F   // 0x8  
 13_01_D1_7F   // 0xc  
 13_0B_00_00   // 0x10 
-93_0B_30_00   // 0x14 
+93_0B_20_00   // 0x14 
 13_04_00_00   // 0x18 
 93_84_FB_FF   // 0x1c 
 EF_00_80_00   // 0x20 
@@ -118,7 +118,7 @@ B3_85_63_01   // 0x15c
 //  7FF00113   # 0x8     addi sp, x0, 2047   # base address
 //  7FD10113   # 0xc     addi sp, sp, 2045
 //  00000B13   # 0x10    addi s6, x0, 0      # location of array
-//  00300B93   # 0x14    addi s7, x0, 3      # n: total number to be sorted
+//  00200B93   # 0x14    addi s7, x0, 2      # n: total number to be sorted
 //  
 //  00000413   # 0x18    addi s0, x0, 0      # start = 0
 //  FFFB8493   # 0x1c    addi s1, s7, -1     # end = n-1
