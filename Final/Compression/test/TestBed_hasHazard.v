@@ -1,8 +1,8 @@
 `timescale 1 ns/10 ps
 `define TestPort    30'hFF
 `define BeginSymbol 32'h00000168
-`define EndSymbol   32'hfffffd5d
-`define CheckNum    7'd33
+`define EndSymbol   32'hFFFFFD5D
+`define CheckNum    7'd95
 
 module	TestBed(
 	clk,
@@ -91,7 +91,7 @@ module	TestBed(
 								nxtaddr = curaddr + 1;
 								if( data_modify != answer ) begin
 									nxt_error_num = error_num + 8'd1;
-									$display("Error: %d, %d, %d",curaddr,data_modify,answer);
+									$display("Error: %d %d",answer,data_modify);
 								end
 							end
 							nxtstate = curstate;
@@ -163,23 +163,85 @@ module	TestBed(
 		7'd13  : answer = 32'd233   ;
 		7'd14  : answer = 32'd377   ;
 		7'd15  : answer = 32'd610   ;
-		7'd16  : answer = 32'd610   ;
-		7'd17  : answer = 32'd377   ;
-		7'd18  : answer = 32'd233   ;
-		7'd19  : answer = 32'd144   ;
-		7'd20  : answer = 32'd89    ;
-		7'd21  : answer = 32'd55    ;
-		7'd22  : answer = 32'd34    ;
-		7'd23  : answer = 32'd21    ;
-		7'd24  : answer = 32'd13    ;
-		7'd25  : answer = 32'd8     ;
-		7'd26  : answer = 32'd5     ;
-		7'd27  : answer = 32'd3     ;
-		7'd28  : answer = 32'd2     ;
-		7'd29  : answer = 32'd1     ;
-		7'd30  : answer = 32'd1     ;
-		7'd31  : answer = 32'd0     ;
-		7'd32  : answer = `EndSymbol;
+		7'd16  : answer = 32'd987   ;
+		7'd17  : answer = 32'd1597  ;
+		7'd18  : answer = 32'd2584  ;
+		7'd19  : answer = 32'd4181  ;
+		7'd20  : answer = 32'd6765  ;
+		7'd21  : answer = 32'd10946 ;
+		7'd22  : answer = 32'd17711 ;
+		7'd23  : answer = 32'd28657 ;
+		7'd24  : answer = 32'd46368 ;
+		7'd25  : answer = 32'd75025 ;
+		7'd26  : answer = 32'd121393;
+		7'd27  : answer = 32'd196418;
+		7'd28  : answer = 32'd317811;
+		7'd29  : answer = 32'd514229;
+		7'd30  : answer = 32'd832040;
+		7'd31  : answer = 32'd1346269;
+		7'd32  : answer = 32'd2178309;
+		7'd33  : answer = 32'd3524578;
+		7'd34  : answer = 32'd5702887;
+		7'd35  : answer = 32'd9227465;
+		7'd36  : answer = 32'd14930352;
+		7'd37  : answer = 32'd24157817;
+		7'd38  : answer = 32'd39088169;
+		7'd39  : answer = 32'd63245986;
+		7'd40  : answer = 32'd102334155;
+		7'd41  : answer = 32'd165580141;
+		7'd42  : answer = 32'd267914296;
+		7'd43  : answer = 32'd433494437;
+		7'd44  : answer = 32'd701408733;
+		7'd45  : answer = 32'd1134903170;
+		7'd46  : answer = 32'd1836311903;
+		7'd47  : answer = 32'd1836311903;
+		7'd48  : answer = 32'd1134903170;
+		7'd49  : answer = 32'd701408733;
+		7'd50  : answer = 32'd433494437;
+		7'd51  : answer = 32'd267914296;
+		7'd52  : answer = 32'd165580141;
+		7'd53  : answer = 32'd102334155;
+		7'd54  : answer = 32'd63245986;
+		7'd55  : answer = 32'd39088169;
+		7'd56  : answer = 32'd24157817;
+		7'd57  : answer = 32'd14930352;
+		7'd58  : answer = 32'd9227465;
+		7'd59  : answer = 32'd5702887;
+		7'd60  : answer = 32'd3524578;
+		7'd61  : answer = 32'd2178309;
+		7'd62  : answer = 32'd1346269;
+		7'd63  : answer = 32'd832040;
+		7'd64  : answer = 32'd514229;
+		7'd65  : answer = 32'd317811;
+		7'd66  : answer = 32'd196418;
+		7'd67  : answer = 32'd121393;
+		7'd68  : answer = 32'd75025 ;
+		7'd69  : answer = 32'd46368 ;
+		7'd70  : answer = 32'd28657 ;
+		7'd71  : answer = 32'd17711 ;
+		7'd72  : answer = 32'd10946 ;
+		7'd73  : answer = 32'd6765  ;
+		7'd74  : answer = 32'd4181  ;
+		7'd75  : answer = 32'd2584  ;
+		7'd76  : answer = 32'd1597  ;
+		7'd77  : answer = 32'd987   ;
+		7'd78  : answer = 32'd610   ;
+		7'd79  : answer = 32'd377   ;
+		7'd80  : answer = 32'd233   ;
+		7'd81  : answer = 32'd144   ;
+		7'd82  : answer = 32'd89    ;
+		7'd83  : answer = 32'd55    ;
+		7'd84  : answer = 32'd34    ;
+		7'd85  : answer = 32'd21    ;
+		7'd86  : answer = 32'd13    ;
+		7'd87  : answer = 32'd8     ;
+		7'd88  : answer = 32'd5     ;
+		7'd89  : answer = 32'd3     ;
+		7'd90  : answer = 32'd2     ;
+		7'd91  : answer = 32'd1     ;
+		7'd92  : answer = 32'd1     ;
+		7'd93  : answer = 32'd0     ;
+		7'd94  : answer = `EndSymbol;
 		endcase
 	end
 endmodule

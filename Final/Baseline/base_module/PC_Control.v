@@ -1,30 +1,35 @@
-module PC_Control(
-    input [31:0] imm_ext,
-    input [31:0] PC_i,
-    input [31:0] PC_branch,
-    input [31:0] PC_jalr,
-    input jal_i,
-    input IF_jalr_i,
-    input jalr_i,
-    input branch,
-    input miss,
-
-    output [31:0] PC_o,
-    output [31:0] PC_plus_o,
+module PC_Control (
+    input  [31:0] imm_ext         ,
+    input  [31:0] PC_i            ,
+    input  [31:0] PC_branch       ,
+    input  [31:0] PC_branch_target,
+    input  [31:0] PC_jalr         ,
+    input  [31:0] PC_jal          ,
+    input         jal_i           ,
+    input         jalr_i          ,
+    input         IF_jalr_i       ,
+    input         IF_jal_i        ,
+    input         branch_pred     ,
+    input         compressed      ,
+    input         miss            ,
+    output [31:0] PC_o            ,
+    output [31:0] PC_plus2_o      ,
+    output [31:0] PC_plus4_o      ,
+    output [31:0] PC_plus_o       ,
     output [31:0] PC_imm_o
 );
+    wire IF_jump;
 
-wire [31:0] PC_1;
-wire [31:0] PC_2;
-wire [31:0] PC_3;
+    assign IF_jump = IF_jalr_i | IF_jal_i;
 
-assign PC_plus_o = PC_i + 4;
-assign PC_imm_o = PC_i + imm_ext;
+    assign PC_plus2_o = {PC_i[31:1]+1'b1, PC_i[0]};
+    assign PC_plus4_o = {PC_i[31:2]+1'b1, PC_i[1:0]};
+    assign PC_plus_o  = compressed ? PC_plus2_o : PC_plus4_o;
 
-assign PC_1 = jal_i ? PC_imm_o : (IF_jalr_i ? PC_i : PC_plus_o);
-// assign PC_2 = branch ? PC_imm : PC_plus_o;
-// assign PC_2 = (miss ? PC_branch : PC_1);
-// assign PC_o = jalr_i ? PC_jalr : PC_2;
-assign PC_o = miss ? PC_branch : (jalr_i ? PC_jalr : PC_1);
+    assign PC_o = miss ? PC_branch :
+        (branch_pred ? PC_branch_target :
+            (jalr_i ? PC_jalr :
+                (jal_i ? PC_jal :
+                    (IF_jump ? PC_i : PC_plus_o))));
 
 endmodule

@@ -28,7 +28,7 @@ nb = 16
 # Modify number of max increment
 # if (incre == 2) generate f(i), f(i)+1, f(i)+2
 # Note: nb >= 0 and nb*incre <= 1023 (size of slow memory is 1024 words)
-incre = 5
+incre = 10
 
 #assertion
 assert(nb >= 3)

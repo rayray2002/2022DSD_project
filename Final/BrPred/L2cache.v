@@ -1,435 +1,217 @@
-module L2cache_D(//32-set 256-word
-        clk,
-        proc_reset,
-        proc_read,
-        proc_write,
-        proc_addr,
-        proc_rdata,
-        proc_wdata,
-        proc_stall,
-        mem_read,
-        mem_write,
-        mem_addr,
-        mem_rdata,
-        mem_wdata,
-        mem_ready
-    );
+module L2cache (
+    //32-set 256-word
+    input              clk        ,
+    input              proc_reset ,
+    input              L1i_read_i ,
+    input              L1i_write_i,
+    input      [ 27:0] L1i_addr_i ,
+    input      [127:0] L1i_wdata_i,
+    output reg [127:0] L1i_rdata_o,
+    output             L1i_ready  ,
+    output reg         memi_read  ,
+    output reg         memi_write ,
+    output reg [ 27:0] memi_addr  ,
+    input      [127:0] memi_rdata ,
+    output     [127:0] memi_wdata ,
+    input              memi_ready ,
+    input              L1d_read_i ,
+    input              L1d_write_i,
+    input      [ 27:0] L1d_addr_i ,
+    input      [127:0] L1d_wdata_i,
+    output reg [127:0] L1d_rdata_o,
+    output             L1d_ready  ,
+    output reg         memd_read  ,
+    output reg         memd_write ,
+    output reg [ 27:0] memd_addr  ,
+    input      [127:0] memd_rdata ,
+    output     [127:0] memd_wdata ,
+    input              memd_ready
+);
 
-    //==== input/output definition ============================
-    input          clk;
-    // processor interface
-    input          proc_reset;
-    input          proc_read, proc_write;
-    input   [29:0] proc_addr;
-    input   [127:0] proc_wdata;
-    output         proc_stall;
-    output  [127:0] proc_rdata;
-    // memory interface
-    input  [127:0] mem_rdata;
-    input          mem_ready;
-    output         mem_read, mem_write;
-    output  [27:0] mem_addr;
-    output [127:0] mem_wdata;
-
-    //==== wire/reg definition ================================
-    reg            mem_read, mem_write,mem_write_next,mem_read_next;
-    reg     [27:0] mem_addr,mem_addr_next;
-    //  reg    [127:0] mem_wdata;
-
-    reg      [1:0] state_w;
-    reg      [1:0] state;
-    reg     [15:0] valid1, valid2,valid1_next,valid2_next;
-    reg     [15:0] dirty1, dirty2,dirty1_next,dirty2_next;
-    reg            be_dirty,be_dirty_next;
-    reg     [15:0] lru,lru_next;             // 0:data1 1:data2
-    reg     [29:6] tag1    [0:15], tag2    [0:15],tag1_next[0:15] , tag2_next[0:15];
-    reg    [127:0] data1   [0:15], data2   [0:15], data1_next[0:15], data2_next[0:15];
-    wire           hit1, hit2;
-    wire     [5:2] set = proc_addr[5:2];
+//// Constants ////
+    localparam STATE_IDLE        = 3'd0;
+    localparam STATE_ALLOCATE_I  = 3'd2;
+    localparam STATE_READY_I     = 3'd4;
+    localparam STATE_WRITEBACK_D = 3'd1;
+    localparam STATE_ALLOCATE_D  = 3'd3;
+    localparam STATE_READY_D     = 3'd5;
 
 
-    //==== combinational circuit ==============================
-    localparam IDLE = 2'd0;
-    localparam WB   = 2'd3;
-    localparam RD   = 2'd2;
+//// Wire/Reg Declaration ////
+    wire proc_access;
+    wire I_access   ;
+    wire D_access   ;
+    reg  access, access_nxt;
+
+    wire [153:0] sram_rdata;
+    reg  [153:0] sram_wdata;
+    wire [ 22:0] sram_tag  ;
+    wire [  4:0] sram_index;
+
+    wire [153:0] sram_data ;
+    wire [ 27:0] sram_addr ;
+    wire         sram_hit  ;
+    wire         sram_dirty;
+    reg          sram_write;
+
+    wire [1:0] proc_addr_offset;
+
+    reg [2:0] state    ;
+    reg [2:0] state_nxt;
 
     integer i;
-    assign proc_stall = ~(hit1 | hit2) && (proc_read | proc_write);
-    assign proc_rdata =   hit1
-           ? data1[set]
-           : data2[set];
-
-    assign hit1 = valid1[set] & (tag1[set] == proc_addr[29:6]);
-    assign hit2 = valid2[set] & (tag2[set] == proc_addr[29:6]);
-
-    assign mem_wdata = lru[set] ? data2[set]: data1[set];
-
-    always@(*)
-    begin
-        state_w=state;
-        case (state)
-            IDLE:
-                if (proc_stall)
-                    state_w = (~lru[set] & dirty1[set] | lru[set] & dirty2[set]) ? WB : RD;
-                else
-                    state_w = IDLE;
-            WB:
-                state_w = mem_ready ? RD : WB;
-            RD:
-                state_w = mem_ready ? IDLE : RD;
-            default:
-                state_w = IDLE;
-        endcase
-    end
 
 
+//// Submodule Instantiation ////
+    assign I_access    = L1i_read_i;
+    assign D_access    = L1d_read_i | L1d_write_i;
+    assign proc_access = I_access | D_access;
+    assign sram_addr   = (I_access ? L1i_addr_i : L1d_addr_i);
 
-    always@(*)
-    begin
-        lru_next = lru;
-        mem_write_next =mem_write;
-        mem_read_next =mem_read;
-        mem_addr_next =mem_addr;
-        valid1_next =valid1;
-        valid2_next =valid2;
-        be_dirty_next = (proc_read) ? 1'b0 : (proc_write) ? 1'b1 : be_dirty;
-        dirty1_next =dirty1;
-        dirty2_next =dirty2;
-
-        for(i=0;i<16;i=i+1)
-        begin
-            tag1_next[i] =tag1[i];
-            tag2_next[i] =tag2[i];
-
-        end
-        for(i=0;i<16;i=i+1)
-        begin
-
-            data1_next[i] =data1[i];
-            data2_next[i] =data2[i];
-        end
-
-        case (state)
-            IDLE:
-            begin
-                if ((proc_read | proc_write) & (hit1 | hit2))
-                    lru_next[set] = hit1;
-
-
-                if (proc_read && ~(hit1 | hit2))
-                begin
-                    if (~lru[set] & dirty1[set])
-                    begin
-                        mem_write_next  = 1;
-                        mem_addr_next   = {tag1[set],set};
-
-                    end
-                    else if (lru[set] & dirty2[set])
-                    begin
-                        mem_write_next  = 1;
-                        mem_addr_next   = {tag2[set],set};
-
-                    end
-                    else
-                    begin
-                        mem_read_next   = 1;
-                        mem_addr_next   = proc_addr[29:2];
-                    end
-                end
-                else if (proc_write)
-                begin
-                    if (hit1)
-                    begin
-                        dirty1_next[set] = 1;
-                        data1_next[set] = proc_wdata;
-                    end
-                    else if (hit2)
-                    begin
-                        dirty2_next[set] = 1;
-                        data2_next[set] = proc_wdata;
-                    end
-                    else if (~lru[set] & dirty1[set])
-                    begin
-                        mem_write_next  = 1;
-                        mem_addr_next   = {tag1[set],set};
-                        //  mem_wdata  = data1[set];
-                    end
-                    else if (lru[set] & dirty2[set])
-                    begin
-                        mem_write_next  = 1;
-                        mem_addr_next   = {tag2[set],set};
-                        //  mem_wdata  = data2[set];
-                    end
-                    else
-                    begin
-                        mem_read_next   = 1;
-                        mem_addr_next   = proc_addr[29:2];
-                    end
-                end
-
-
-
-
-
-
-            end
-            WB:
-            begin
-
-                if (mem_ready)
-                begin
-                    mem_read_next   = 1;
-                    mem_write_next  = 0;
-                    mem_addr_next   =  proc_addr[29:2];
-                end
-            end
-            RD:
-            begin
-
-
-
-                if (mem_ready)
-                begin
-                    mem_read_next   = 0;
-                    if (~lru[set])
-                    begin
-                        valid1_next[set] = 1;
-                        dirty1_next[set] = be_dirty;
-                        tag1_next  [set] = proc_addr[29:6];
-                        data1_next [set] = mem_rdata;
-                    end
-                    else
-                    begin
-                        valid2_next[set] = 1;
-                        dirty2_next[set] = be_dirty;
-                        tag2_next  [set] = proc_addr[29:6];
-                        data2_next [set] = mem_rdata;
-                    end
-                end
-            end
-
-        endcase
-
-
-    end
-
-
-
-
-    //==== sequential circuit =================================
-    always@( posedge clk )
-    begin
-        if( proc_reset )
-        begin
-            mem_read   <= 0;
-            mem_write  <= 0;
-            state   <= IDLE;
-            valid1  <= 0;
-            valid2  <= 0;
-            dirty1  <= 0;
-            dirty2  <= 0;
-            lru     <= 0;
-
-            mem_addr <=0;
-            be_dirty <=0;
-            for(i=0;i<16;i=i+1)
-            begin
-                tag1[i] <=  0;
-                tag2[i] <=  0;
-                data1[i] <= 0;
-                data2[i] <= 0;
-            end
-        end
-        else
-        begin
-            state   <= state_w;
-            be_dirty <= be_dirty_next;
-            lru <= lru_next;
-
-            mem_write  <= mem_write_next;
-            mem_addr   <= mem_addr_next;
-            mem_read   <=mem_read_next;
-            dirty1 <=  dirty1_next;
-            dirty2 <=  dirty2_next ;
-            valid2 <= valid2_next;
-            valid1 <= valid1_next;
-            for(i=0 ;i<16;i=i+1)
-            begin
-                tag1[i] <= tag1_next[i];
-                tag2[i] <= tag2_next[i];
-                data1[i] <=data1_next[i];
-                data2[i] <= data2_next[i];
-            end
-
-
-
-        end
-    end
-endmodule
-
-
-module L2cache_I(//32-set 256-word
-        clk,
-        proc_reset,
-        proc_read,
-        proc_write,
-        proc_addr,
-        proc_rdata,
-        proc_wdata,
-        proc_stall,
-        mem_read,
-        mem_write,
-        mem_addr,
-        mem_rdata,
-        mem_wdata,
-        mem_ready
+    cache_sram_l2 cache_sram_l2 (
+        .clk    (clk       ),
+        .rst    (proc_reset),
+        
+        .addr_i (sram_addr ),
+        .wdata_i(sram_wdata),
+        .write_i(sram_write),
+        .I_D    (I_access  ),
+        
+        .rdata_o(sram_rdata),
+        .hit_o  (sram_hit  )
     );
 
-    //==== input/output definition ============================
-    input          clk;
-    // processor interface
-    input          proc_reset;
-    input          proc_read, proc_write;
-    input   [29:0] proc_addr;
-    input   [127:0] proc_wdata;
-    output         proc_stall;
-    output  [127:0] proc_rdata;
-    // memory interface
-    input  [127:0] mem_rdata;
-    input          mem_ready;
-    output         mem_read, mem_write;
-    output  [27:0] mem_addr;
-    output [127:0] mem_wdata;
 
-    //==== wire/reg definition ================================
-    reg            mem_read, mem_read_next;
-    reg     [27:0] mem_addr,mem_addr_next;
-    //  reg    [127:0] mem_wdata;
+//// Finite-State Machine ////
+// Next State Logic
+    always @* begin
+        state_nxt = state;
 
-    reg       state_w;
-    reg       state;
-    reg     [15:0] valid1, valid2,valid1_next,valid2_next;
-
-    reg     [15:0] lru,lru_next;             // 0:data1 1:data2
-    reg     [29:6] tag1    [0:15], tag2    [0:15],tag1_next[0:15] , tag2_next[0:15];
-    reg    [127:0] data1   [0:15], data2   [0:15], data1_next[0:15], data2_next[0:15];
-    wire           hit1, hit2;
-    wire     [5:2] set = proc_addr[5:2];
-
-
-    //==== combinational circuit ==============================
-    localparam IDLE = 2'd0;
-    localparam RD   = 2'd1;
-    integer i;
-
-    assign proc_stall = ~(hit1 | hit2) && (proc_read);
-    assign proc_rdata =   hit1
-           ? data1[set]
-           : data2[set];
-    assign mem_write = 1'b0;
-    assign hit1 = valid1[set] & (tag1[set] == proc_addr[29:6]);
-    assign hit2 = valid2[set] & (tag2[set] == proc_addr[29:6]);
-
-
-    always@(*)
-    begin
         case (state)
-            IDLE:
-                state_w = proc_stall;
-            RD:
-                state_w = ~mem_ready;
-            default:
-                state_w = IDLE;
+            STATE_IDLE : begin
+                if (proc_access && !sram_hit) begin
+                    if (sram_dirty) begin
+                        state_nxt = STATE_WRITEBACK_D;
+                    end
+                    else begin
+                        if (I_access) begin
+                            state_nxt = STATE_ALLOCATE_I;
+                        end else begin
+                            state_nxt = STATE_ALLOCATE_D;
+                        end
+                    end
+                end
+            end
+
+            STATE_WRITEBACK_D : begin
+                if (memd_ready) begin
+                    if (I_access) begin
+                        state_nxt = STATE_ALLOCATE_I;
+                    end else begin
+                        state_nxt = STATE_ALLOCATE_D;
+                    end
+                end
+            end
+
+            STATE_ALLOCATE_I : begin
+                if (memi_ready) begin
+                    state_nxt = STATE_READY_I;
+                end
+            end
+
+            STATE_ALLOCATE_D : begin
+                if (memd_ready) begin
+                    state_nxt = STATE_READY_D;
+                end
+            end
+
+            default : begin
+                state_nxt = STATE_IDLE;
+            end
+        endcase
+    end
+
+// State Register
+    always @(posedge clk) begin
+        if (proc_reset) begin
+            state       <= STATE_IDLE;
+            L1i_rdata_o <= 0;
+            L1d_rdata_o <= 0;
+        end
+        else begin
+            state <= state_nxt;
+            if (I_access) begin
+                L1i_rdata_o <= sram_data;
+            end
+            if (D_access) begin
+                L1d_rdata_o <= sram_data;
+            end
+        end
+    end
+
+// Output Logic
+    always @* begin
+        memi_read  = 0;
+        memi_write = 0;
+        memi_addr  = L1i_addr_i;
+        memd_read  = 0;
+        memd_write = 0;
+        memd_addr  = L1d_addr_i;
+        sram_write = 0;
+
+        case (state)
+            STATE_IDLE : begin
+                sram_write = L1d_write_i && sram_hit;
+            end
+
+            STATE_WRITEBACK_D : begin
+                memd_write = 1;
+            end
+
+            STATE_ALLOCATE_I : begin
+                memi_read = 1;
+            end
+
+            STATE_ALLOCATE_D : begin
+                memd_read = 1;
+            end
+
+            STATE_READY_I, STATE_READY_D : begin
+                sram_write = 1;
+            end
         endcase
     end
 
 
+//// Combinational Logic ////
+    // assign proc_access  = proc_read_i || proc_write_i;
+    assign L1i_ready = I_access && sram_hit;
+    assign L1d_ready = D_access && sram_hit;
 
-    always@(*)
-    begin
-        mem_read_next = mem_read;
-        mem_addr_next = mem_addr;
-        valid1_next   = valid1;
-        valid2_next   = valid2;
-        lru_next      = lru;
-        for (i = 0; i < 16; i = i + 1)
-        begin
-            tag1_next[i] = tag1[i];
-            tag2_next[i] = tag2[i];
+    assign memi_wdata = sram_data;
+    assign memd_wdata = sram_data;
+
+    // assign L1i_rdata_o = sram_data;
+    // assign L1d_rdata_o = sram_data;
+
+    assign sram_dirty = sram_rdata[151];
+    // assign sram_tag   = sram_rdata[150:128];
+    assign sram_data = sram_rdata[127:0];
+
+    assign sram_tag = sram_addr[27:5];
+    // assign sram_index = sram_addr[4:0];
+
+    always @* begin
+        // I/D(1), valid(1), dirty(1), tag(23), word0(32), word1(32), word2(32), word3(32)
+        sram_wdata = {3'b111, sram_tag, L1d_wdata_i};
+
+        if (state == STATE_READY_D) begin
+            sram_wdata = {3'b110, sram_tag, memd_rdata};
         end
-        for(i = 0; i < 16; i = i + 1)
-        begin
-            data1_next[i] = data1[i];
-            data2_next[i] = data2[i];
-        end
-
-        case (state)
-            IDLE:
-            begin
-                if (proc_stall)
-                begin
-                    mem_read_next = 1;
-                    mem_addr_next = proc_addr[29:2];
-                end
-                if (proc_read & (hit1 | hit2))
-                    lru_next[set] = hit1;
-            end
-            RD:
-                if (mem_ready)
-                begin
-                    mem_read_next   = 0;
-                    if (~lru[set])
-                    begin
-                        valid1_next[set] = 1;
-                        tag1_next  [set] = proc_addr[29:6];
-                        data1_next [set] = mem_rdata;
-                    end
-                    else
-                    begin
-                        valid2_next[set] = 1;
-                        tag2_next  [set] = proc_addr[29:6];
-                        data2_next [set] = mem_rdata;
-                    end
-                end
-        endcase
-    end
-
-    //==== sequential circuit =================================
-    always@( posedge clk )
-    begin
-        if( proc_reset )
-        begin
-            mem_read    <= 0;
-            state       <= IDLE;
-            valid1      <= 0;
-            valid2      <= 0;
-            lru         <= 0;
-            mem_addr    <=0;
-            for(i=0;i<16;i=i+1)
-            begin
-                tag1[i]     <= 0;
-                tag2[i]     <= 0;
-                data1[i]    <= 0;
-                data2[i]    <= 0;
-            end
-
-        end
-        else
-        begin
-            state   <= state_w;
-            lru     <= lru_next;
-
-            mem_addr    <= mem_addr_next;
-            mem_read    <=mem_read_next;
-            valid2      <= valid2_next;
-            valid1      <= valid1_next;
-            for(i=0 ;i<16;i=i+1)
-            begin
-                tag1[i]     <= tag1_next[i];
-                tag2[i]     <= tag2_next[i];
-                data1[i]    <= data1_next[i];
-                data2[i]    <= data2_next[i];
-            end
+        else begin
+            // write hit
+            sram_wdata[151] = 1; // dirty
+            sram_wdata = {3'b111, sram_tag, L1d_wdata_i};
         end
     end
 endmodule

@@ -34,7 +34,8 @@ module ALU (
 
     always @(*) begin
         case(ALUCtrl_i)
-            `ADD, `SUB: data_o = Adder_o;
+            // `ADD, `SUB: data_o = Adder_o;
+            // `SUB: data_o = data1_i - data2_i;
             `AND : data_o = data1_i & data2_i;
             `OR  : data_o = data1_i | data2_i;
             `XOR : data_o = data1_i ^ data2_i;

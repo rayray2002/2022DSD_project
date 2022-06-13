@@ -13,7 +13,7 @@ module Prediction (
     output        Hit_4_o
 );
 
-    parameter  NUM_INDEX_BIT = 4                 ;
+    parameter  NUM_INDEX_BIT = 2                 ;
     localparam NUM_ENTRY     = 1 << NUM_INDEX_BIT;
 
     localparam S_NONTAKEN      = 0;
@@ -24,11 +24,18 @@ module Prediction (
     reg [31:0] target    [0:NUM_ENTRY-1];
     reg [31:0] target_nxt[0:NUM_ENTRY-1];
 
+    reg [30-NUM_INDEX_BIT:0] tag [0:NUM_ENTRY-1];
+    reg [30-NUM_INDEX_BIT:0] tag_nxt [0:NUM_ENTRY-1];
+
     reg [1:0] predict    [0:NUM_ENTRY-1];
     reg [1:0] predict_nxt[0:NUM_ENTRY-1];
 
     wire [NUM_INDEX_BIT-1:0] read_index_2;
     wire [NUM_INDEX_BIT-1:0] read_index_4;
+
+    wire [30-NUM_INDEX_BIT:0] read_tag_2;
+    wire [30-NUM_INDEX_BIT:0] read_tag_4;
+
     wire [NUM_INDEX_BIT-1:0] write_index ;
 
     integer i;
@@ -39,26 +46,34 @@ module Prediction (
     assign ReadTarget_2_o = target[read_index_2];
     assign ReadTarget_4_o = target[read_index_4];
 
-    assign Hit_2_o =
+    assign Hit_2_o = 
+    (tag[read_index_2] == read_tag_2) &
         (predict[read_index_2] == S_TAKEN
             || predict[read_index_2] == S_NEAR_TAKEN);
 
-    assign Hit_4_o =
+    assign Hit_4_o = 
+    (tag[read_index_4] == read_tag_4) &
         (predict[read_index_4] == S_TAKEN
             || predict[read_index_4] == S_NEAR_TAKEN);
 
 
-    assign read_index_2 = ReadAddr_2_i[NUM_INDEX_BIT+1:2];
-    assign read_index_4 = ReadAddr_4_i[NUM_INDEX_BIT+1:2];
-    assign write_index  = WriteAddr_i[NUM_INDEX_BIT+1:2];
+    assign read_index_2 = ReadAddr_2_i[NUM_INDEX_BIT+1:1];
+    assign read_index_4 = ReadAddr_4_i[NUM_INDEX_BIT+1:1];
+
+    assign read_tag_2 = ReadAddr_2_i[30: NUM_INDEX_BIT];
+    assign read_tag_4 = ReadAddr_4_i[30: NUM_INDEX_BIT];
+
+    assign write_index  = WriteAddr_i[NUM_INDEX_BIT+1:1];
 
     always @* begin
         for (i = 0; i < NUM_ENTRY; i = i + 1) begin
             target_nxt[i] = target[i];
+            tag_nxt[i]    = tag[i];
         end
 
         if (miss && BranchTaken_i) begin
-            target_nxt[write_index] = { WriteTarget_i[31:2], 2'b00 };
+            target_nxt[write_index] = { WriteTarget_i[31:1], 1'b0 };
+            tag_nxt[write_index]    = WriteAddr_i[30:NUM_INDEX_BIT];
         end
     end
 
@@ -110,10 +125,12 @@ module Prediction (
             if (~rst_n) begin
                 predict[i] <= S_NEAR_NONTAKEN;
                 target[i]  <= 0;
+                tag[i]     <= 0;
             end
             else begin
                 predict[i] <= predict_nxt[i];
                 target[i]  <= target_nxt[i];
+                tag[i]     <= tag_nxt[i];
             end
         end
     end

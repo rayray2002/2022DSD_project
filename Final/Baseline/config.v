@@ -15,3 +15,5 @@
 `include "./base_module/MEM_WB.v"
 `include "./base_module/PC_Control.v"
 `include "./base_module/Compare.v"
+`include "./Prediction.v"
+`include "./Decompressor.v"

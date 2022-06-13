@@ -10,7 +10,7 @@ module L2cache (
     output             L1i_ready  ,
     output reg         memi_read  ,
     output reg         memi_write ,
-    output reg [ 27:0] memi_addr  ,
+    output     [ 27:0] memi_addr  ,
     input      [127:0] memi_rdata ,
     output     [127:0] memi_wdata ,
     input              memi_ready ,
@@ -28,113 +28,181 @@ module L2cache (
     input              memd_ready
 );
 
-//// Constants ////
-    localparam STATE_IDLE        = 3'd0;
-    localparam STATE_ALLOCATE_I  = 3'd2;
-    localparam STATE_READY_I     = 3'd4;
-    localparam STATE_WRITEBACK_D = 3'd1;
-    localparam STATE_ALLOCATE_D  = 3'd3;
-    localparam STATE_READY_D     = 3'd5;
 
+//// Constants ////
+    localparam STATE_IDLE      = 3'd0;
+    localparam STATE_WRITEBACK = 3'd1;
+    localparam STATE_ALLOCATE  = 3'd2;
+    localparam STATE_READY     = 3'd3;
+    // localparam STATE_WAIT      = 3'd4;
+
+    localparam STATE_I = 1'd0;
+    localparam STATE_D = 1'd1;
 
 //// Wire/Reg Declaration ////
     wire proc_access;
     wire I_access   ;
     wire D_access   ;
+    wire conflict   ;
+    reg  access, access_nxt;
 
     wire [153:0] sram_rdata;
-    reg  [153:0] sram_wdata;
+    wire [153:0] sram_wdata;
     wire [ 22:0] sram_tag  ;
     wire [  4:0] sram_index;
 
+    wire [ 27:0] I_sram_addr ;
+    wire [153:0] I_sram_wdata;
+    reg          I_sram_write;
+    reg          I_sram_read ;
+
+    wire [ 27:0] D_sram_addr ;
+    wire [153:0] D_sram_wdata;
+    reg          D_sram_write;
+    reg          D_sram_read ;
+
+    wire [27:0] sram_addr ;
+    wire        sram_write;
+
     wire [153:0] sram_data ;
-    wire [ 27:0] sram_addr ;
     wire         sram_hit  ;
     wire         sram_dirty;
-    reg          sram_write;
 
     wire [1:0] proc_addr_offset;
 
-    reg [2:0] state    ;
-    reg [2:0] state_nxt;
+    reg [1:0] I_state    ;
+    reg [1:0] I_state_nxt;
+
+    reg [1:0] D_state    ;
+    reg [2:0] D_state_nxt;
+
+    reg SRAM_state    ;
+    reg SRAM_state_nxt;
+
+    wire permission;
+    wire I_request ;
+    wire D_request ;
 
     integer i;
 
 
 //// Submodule Instantiation ////
-    assign I_access    = L1i_read_i;
-    assign D_access    = L1d_read_i | L1d_write_i;
+    assign permission = 1;
+    assign I_access   = L1i_read_i;
+    assign D_access   = L1d_read_i | L1d_write_i;
+
+    assign I_request = I_sram_read | I_sram_write;
+    assign D_request = D_sram_read | D_sram_write;
+
     assign proc_access = I_access | D_access;
-    assign sram_addr   = (I_access ? L1i_addr_i : L1d_addr_i);
+    assign conflict    = I_access & D_access;
 
     cache_sram_l2 cache_sram_l2 (
-        .clk    (clk       ),
-        .rst    (proc_reset),
+        .clk    (clk                     ),
+        .rst    (proc_reset              ),
         
-        .addr_i (sram_addr ),
-        .wdata_i(sram_wdata),
-        .write_i(sram_write),
-        .I_D    (I_access  ),
+        .addr_i (sram_addr               ),
+        .wdata_i(sram_wdata              ),
+        .write_i(sram_write              ),
+        .I_D    (conflict ? 0 : I_access),
         
-        .rdata_o(sram_rdata),
-        .hit_o  (sram_hit  )
+        .rdata_o(sram_rdata              ),
+        .hit_o  (sram_hit                )
     );
 
 
 //// Finite-State Machine ////
 // Next State Logic
     always @* begin
-        state_nxt = state;
+        I_state_nxt = I_state;
 
-        case (state)
+        case (I_state)
             STATE_IDLE : begin
-                if (proc_access && !sram_hit) begin
-                    if (sram_dirty) begin
-                        state_nxt = STATE_WRITEBACK_D;
+                // if (conflict && permission)
+                if (~conflict || ~permission) begin
+                    if (I_access && !sram_hit) begin
+                        if (sram_dirty)
+                            I_state_nxt = STATE_WRITEBACK;
+                        else
+                            I_state_nxt = STATE_ALLOCATE;
                     end
-                    else begin
-                        if (I_access) begin
-                            state_nxt = STATE_ALLOCATE_I;
-                        end else begin
-                            state_nxt = STATE_ALLOCATE_D;
-                        end
-                    end
+                end
+                else begin
+                    I_state_nxt = STATE_IDLE;
                 end
             end
 
-            STATE_WRITEBACK_D : begin
+            STATE_WRITEBACK : begin
                 if (memd_ready) begin
-                    state_nxt = STATE_ALLOCATE_D;
+                    I_state_nxt = STATE_ALLOCATE;
                 end
             end
 
-            STATE_ALLOCATE_I : begin
+            STATE_ALLOCATE : begin
                 if (memi_ready) begin
-                    state_nxt = STATE_READY_I;
+                    I_state_nxt = STATE_READY;
                 end
             end
 
-            STATE_ALLOCATE_D : begin
-                if (memd_ready) begin
-                    state_nxt = STATE_READY_D;
-                end
-            end
-
-            default : begin
-                state_nxt = STATE_IDLE;
+            STATE_READY : begin
+                I_state_nxt = STATE_IDLE;
             end
         endcase
+    end
+
+    always @* begin
+        D_state_nxt = D_state;
+
+        case (D_state)
+            STATE_IDLE : begin
+                if (~conflict || permission) begin
+                    if (D_access && !sram_hit) begin
+                        if (sram_dirty)
+                            D_state_nxt = STATE_WRITEBACK;
+                        else
+                            D_state_nxt = STATE_ALLOCATE;
+                    end
+                end
+            end
+
+            STATE_WRITEBACK : begin
+                if (memd_ready) begin
+                    D_state_nxt = STATE_ALLOCATE;
+                end
+            end
+
+            STATE_ALLOCATE : begin
+                if (memd_ready) begin
+                    D_state_nxt = STATE_READY;
+                end
+            end
+
+            STATE_READY : begin
+                D_state_nxt = STATE_IDLE;
+            end
+        endcase
+    end
+
+    always @* begin
+        if (conflict)
+            SRAM_state_nxt = ~SRAM_state;
+        else
+            SRAM_state_nxt = SRAM_state;
     end
 
 // State Register
     always @(posedge clk) begin
         if (proc_reset) begin
-            state       <= STATE_IDLE;
+            I_state     <= STATE_IDLE;
+            D_state     <= STATE_IDLE;
+            SRAM_state  <= I_state;
             L1i_rdata_o <= 0;
             L1d_rdata_o <= 0;
         end
         else begin
-            state <= state_nxt;
+            I_state    <= I_state_nxt;
+            D_state    <= D_state_nxt;
+            SRAM_state <= SRAM_state_nxt;
             if (I_access) begin
                 L1i_rdata_o <= sram_data;
             end
@@ -146,33 +214,54 @@ module L2cache (
 
 // Output Logic
     always @* begin
-        memi_read  = 0;
-        memi_write = 0;
-        memi_addr  = L1i_addr_i;
-        memd_read  = 0;
-        memd_write = 0;
-        memd_addr  = L1d_addr_i;
-        sram_write = 0;
+        memi_read    = 0;
+        memi_write   = 0;
+        I_sram_write = 0;
+        I_sram_read  = 0;
 
-        case (state)
+        memd_read    = 0;
+        memd_write   = 0;
+        D_sram_write = 0;
+        D_sram_read  = 0;
+
+        memd_addr = L1d_addr_i;
+
+        case (I_state)
             STATE_IDLE : begin
-                sram_write = L1d_write_i && sram_hit;
+                I_sram_read = L1i_read_i;
             end
 
-            STATE_WRITEBACK_D : begin
+            STATE_WRITEBACK : begin
                 memd_write = 1;
+                memd_addr  = {sram_rdata[150:128], L1i_addr_i[4:0]};
             end
 
-            STATE_ALLOCATE_I : begin
+            STATE_ALLOCATE : begin
                 memi_read = 1;
             end
 
-            STATE_ALLOCATE_D : begin
+            STATE_READY : begin
+                I_sram_write = 1;
+            end
+        endcase
+
+        case (D_state)
+            STATE_IDLE : begin
+                D_sram_write = L1d_write_i & sram_hit & permission;
+                D_sram_read  = L1d_read_i;
+            end
+
+            STATE_WRITEBACK : begin
+                memd_write = 1;
+                memd_addr  = {sram_rdata[150:128], L1d_addr_i[4:0]};
+            end
+
+            STATE_ALLOCATE : begin
                 memd_read = 1;
             end
 
-            STATE_READY_I, STATE_READY_D : begin
-                sram_write = 1;
+            STATE_READY : begin
+                D_sram_write = 1;
             end
         endcase
     end
@@ -180,45 +269,23 @@ module L2cache (
 
 //// Combinational Logic ////
     // assign proc_access  = proc_read_i || proc_write_i;
-    assign L1i_ready = I_access && sram_hit;
-    assign L1d_ready = D_access && sram_hit;
+    assign L1i_ready = conflict ? (permission ? 0 : (I_access && sram_hit)) : (I_access && sram_hit);
+    assign L1d_ready = conflict ? (permission ? (D_access && sram_hit) : 0) : (D_access && sram_hit);
 
     assign memi_wdata = sram_data;
     assign memd_wdata = sram_data;
 
-    // assign L1i_rdata_o = sram_data;
-    // assign L1d_rdata_o = sram_data;
+    assign memi_addr = L1i_addr_i;
+    // assign memd_addr = L1d_addr_i;
 
     assign sram_dirty = sram_rdata[151];
-    // assign sram_tag   = sram_rdata[150:128];
     assign sram_data  = sram_rdata[127:0];
-
     assign sram_tag   = sram_addr[27:5];
-    // assign sram_index = sram_addr[4:0];
 
-    always @* begin
-        // I/D(1), valid(1), dirty(1), tag(23), word0(32), word1(32), word2(32), word3(32)
-        sram_wdata = { I_access, 2'b11, sram_tag, sram_data };
+    assign sram_addr  = conflict ? (~permission ? L1i_addr_i : L1d_addr_i) : (I_access ? L1i_addr_i : L1d_addr_i);
+    assign sram_write = conflict ? (~permission ? I_sram_write : D_sram_write) : (I_access ? I_sram_write : D_sram_write);
+    assign sram_wdata = conflict ? (~permission ? I_sram_wdata : D_sram_wdata) : (I_access ? I_sram_wdata : D_sram_wdata);
 
-        if (state == STATE_READY_I) begin
-            // allocate
-            // sram_wdata[151]   = 0; // not dirty
-            // sram_wdata[127:0] = memi_rdata;
-            sram_wdata = { I_access, 2'b10, sram_tag, memi_rdata };
-        end else
-        if (state == STATE_READY_D) begin
-            // allocate
-            // sram_wdata[151]   = 0; // not dirty
-            // sram_wdata[127:0] = memd_rdata;
-            sram_wdata = { I_access, 2'b10, sram_tag, memd_rdata };
-        end
-        else begin
-            // write hit
-            // sram_wdata[151] = 1; // dirty
-            if (I_access)
-                sram_wdata = { I_access, 2'b11, sram_tag, L1i_wdata_i };
-            else
-                sram_wdata = { I_access, 2'b11, sram_tag, L1d_wdata_i };
-        end
-    end
+    assign I_sram_wdata = {3'b110, sram_tag, memi_rdata};
+    assign D_sram_wdata = (D_state == STATE_READY) ? {3'b010, sram_tag, memd_rdata} : {3'b011, sram_tag, L1d_wdata_i};
 endmodule

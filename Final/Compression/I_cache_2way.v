@@ -53,14 +53,14 @@ module I_cache (
     reg         fetch_next, fetch_next_nxt, fetch_next_stall, fetch_next_stall_nxt;
     reg  [29:0] sram_addr          ;
     reg  [31:0] sram_data_word     ;
-    reg  [15:0] prev_last_half_word;
+    reg  [31:0] buffer_word;
 
     assign last_word  = (proc_addr_offset == 3'b111);
     assign compressed = ~(sram_data_word[25:24] == 2'b11);
 
     always @(*) begin
         if (fetch_next) begin
-            proc_rdata_o = {prev_last_half_word, sram_data[31:16]};
+            proc_rdata_o = buffer_word;
             sram_addr    = (proc_addr_i >> 1) + 1'b1;
         end
         else begin
@@ -110,7 +110,10 @@ module I_cache (
                 if (!sram_hit) begin
                     state_nxt = STATE_ALLOCATE;
                 end else begin
-                    state_nxt = STATE_READY;
+                    // state_nxt = STATE_READY;
+                    state_nxt = STATE_IDLE;
+                    if (fetch_next)
+                        fetch_next_stall_nxt = 0;
                 end
             end
 
@@ -134,14 +137,16 @@ module I_cache (
             state               <= STATE_IDLE;
             fetch_next          <= 0;
             fetch_next_stall    <= 1;
-            prev_last_half_word <= 0;
+            buffer_word <= 0;
         end
         else begin
             state            <= state_nxt;
             fetch_next       <= fetch_next_nxt;
             fetch_next_stall <= fetch_next_stall_nxt;
             if (~fetch_next)
-                prev_last_half_word <= sram_data_word[31:16];
+                buffer_word <= {sram_data_word[31:16], buffer_word[31:16]};
+            else
+                buffer_word <= {buffer_word[31:16], mem_rdata_i[31:16]};
         end
     end
 
@@ -173,7 +178,8 @@ module I_cache (
 
 //// Combinational Logic ////
     assign proc_access  = proc_read_i || proc_write_i;
-    assign proc_stall_o = proc_access && (!sram_hit || (last_word & ~compressed & fetch_next_stall));
+    assign proc_stall_o = proc_access && (!sram_hit || (last_word & ~compressed & ~fetch_next));
+    // assign proc_stall_o = state != STATE_IDLE;
 
     assign mem_wdata_o = sram_data;
 
@@ -200,15 +206,16 @@ module I_cache (
     assign sram_tag   = sram_rdata[153:128];
     assign sram_data  = sram_rdata[127:0];
 
-    assign proc_addr_tag    = proc_addr_i[30:5];
+    // assign proc_addr_tag    = proc_addr_i[30:5];
+    assign proc_addr_tag    = sram_addr[29:4];
     assign proc_addr_index  = proc_addr_i[4:3];
     assign proc_addr_offset = proc_addr_i[2:0];
 
     always @* begin
         // valid(1), dirty(1), tag(26), word0(32), word1(32), word2(32), word3(32)
-        sram_wdata        = { 2'b10, proc_addr_tag, sram_data };
-        sram_wdata[154]   = 0; // not dirty
-        sram_wdata[127:0] = mem_rdata_i;
+        sram_wdata        = { 2'b10, proc_addr_tag, mem_rdata_i };
+        // sram_wdata[154]   = 0; // not dirty
+        // sram_wdata[127:0] = mem_rdata_i;
     end
 
 endmodule

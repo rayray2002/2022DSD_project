@@ -25,8 +25,9 @@ module RISCV_Pipeline (
 );
 
 // IF
-    wire [31:0] IF_pc_i, IF_pc_o, IF_instruction, IF_instruction_raw, IF_pc_plus, IF_pc_plus2, IF_pc_plus4, IF_pc_imm, IF_imm, IF_BTB_addr4, IF_BTB_addr2, IF_BTB_addr;
-    wire        IF_jal, IF_jalr, IF_BPHit, IF_compressed, IF_branch;
+    wire        [31:0] IF_pc_i, IF_pc_o, IF_instruction, IF_instruction_raw, IF_pc_plus, IF_pc_plus2, IF_pc_plus4, IF_BTB_addr4, IF_BTB_addr2, IF_BTB_addr;
+    wire signed [31:0] IF_pc_imm, IF_imm;
+    wire               IF_jal, IF_jalr, IF_BPHit, IF_compressed, IF_branch;
 
 // ID
     wire        [31:0] ID_instr, ID_pc_plus, ID_pc_imm, ID_pc, ID_jal_addr;
@@ -40,14 +41,14 @@ module RISCV_Pipeline (
     assign ID_RS2addr = ID_instr[24: 20];
 
 // EX
-    wire [31:0] EX_pc_plus, EX_ALUResult_final, EX_pc_imm, EX_imm_addr, EX_RS1data_jalr, EX_jalr_addr;
-    wire [31:0] EX_RS1data, EX_RS2data, EX_imm_ext, EX_ALUdata1, EX_ALU_data2, EX_ALURS2, EX_ALUResult;
-    wire [ 9:0] EX_funct  ;
-    wire [ 6:0] EX_ctrl   ;
-    wire [ 4:0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
-    wire [ 3:0] EX_ALUCtrl;
-    wire [ 1:0] EX_ALUOp, EX_FowardA, EX_FowardB;
-    wire        EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr, EX_miss, EX_BPHit, EX_BPHit2, EX_BPHit4;
+    wire        [31:0] EX_pc_plus, EX_pc_imm, EX_imm_addr, EX_RS1data_jalr, EX_jalr_addr;
+    wire signed [31:0] EX_RS1data, EX_RS2data, EX_imm_ext, EX_ALUdata1, EX_ALU_data2, EX_ALURS2, EX_ALUResult, EX_ALUResult_final;
+    wire        [ 9:0] EX_funct  ;
+    wire        [ 6:0] EX_ctrl   ;
+    wire        [ 4:0] EX_RDaddr, EX_RS1addr, EX_RS2addr;
+    wire        [ 3:0] EX_ALUCtrl;
+    wire        [ 1:0] EX_ALUOp, EX_FowardA, EX_FowardB;
+    wire               EX_zero, EX_jump, EX_Branch, EX_func3_0, EX_jalr, EX_miss, EX_BPHit, EX_BPHit2, EX_BPHit4;
 
 // Mem
     wire signed [31:0] MEM_ALUResult, MEM_RS2data, MEM_MemData;
@@ -61,11 +62,11 @@ module RISCV_Pipeline (
     wire        [ 1:0] WB_ctrl     ;
 
 // Assign
-    assign ICACHE_ren   = 1'b1;
-    assign ICACHE_wen   = 1'b0;
-    assign ICACHE_addr  = IF_pc_o[31:1];//[31:2];
-    assign ICACHE_wdata = 32'd0;
-    assign MEM_Stall    = ICACHE_stall | DCACHE_stall;
+    assign ICACHE_ren         = 1'b1;
+    assign ICACHE_wen         = 1'b0;
+    assign ICACHE_addr        = IF_pc_o[31:1];//[31:2];
+    assign ICACHE_wdata       = 32'd0;
+    assign MEM_Stall          = ICACHE_stall | DCACHE_stall;
     assign IF_instruction_raw = {ICACHE_rdata[7:0], ICACHE_rdata[15:8], ICACHE_rdata[23:16], ICACHE_rdata[31:24]};
 
     assign DCACHE_ren   = MEM_ctrl[2];
@@ -78,9 +79,9 @@ module RISCV_Pipeline (
     assign PC = IF_pc_o;
 
 // IF stage
-    assign IF_jal        = (IF_instruction[4:3] == 2'b01);
-    assign IF_jalr       = (IF_instruction[4:2] == 3'b001);
-    assign IF_branch     = IF_compressed ? ({IF_instruction_raw[15:14], IF_instruction_raw[1:0]} == 4'b1101) : (IF_instruction_raw[6:2] == 5'b11000);
+    assign IF_jal    = (IF_instruction[4:3] == 2'b01);
+    assign IF_jalr   = (IF_instruction[4:2] == 3'b001);
+    assign IF_branch = IF_compressed ? ({IF_instruction_raw[15:14], IF_instruction_raw[1:0]} == 4'b1101) : (IF_instruction_raw[6:2] == 5'b11000);
     PC_Control PC_Control (
         .imm_ext         (IF_imm       ),
         .PC_i            (IF_pc_o      ),
@@ -114,7 +115,7 @@ module RISCV_Pipeline (
 
 `ifdef COMPRESSION
     Decompressor Decompressor (
-        .PC_2    (IF_pc_o[1]  ),
+        .PC_2    (IF_pc_o[1]        ),
         .inst_raw(IF_instruction_raw),
         .inst    (IF_instruction    )
     );
@@ -151,23 +152,23 @@ module RISCV_Pipeline (
 
     Jump_Imm_Gen Jump_Imm_Gen (
         .instruction_i(IF_instruction),
-        .imm_o        (IF_imm  )
+        .imm_o        (IF_imm        )
     );
 
     IF_ID IF_ID (
-        .clk      (clk                                                      ),
-        .rst_n    (rst_n                                                    ),
+        .clk      (clk                                                            ),
+        .rst_n    (rst_n                                                          ),
         .instr_i  ((ID_jal | EX_jalr | ID_jalr | EX_miss) ? 32'b0 : IF_instruction),
-        .instr_o  (ID_instr                                                 ),
-        .pc_plus_i(IF_pc_plus                                               ),
-        .pc_plus_o(ID_pc_plus                                               ),
+        .instr_o  (ID_instr                                                       ),
+        .pc_plus_i(IF_pc_plus                                                     ),
+        .pc_plus_o(ID_pc_plus                                                     ),
         // .pc_imm_i (IF_pc_imm                                                ),
         // .pc_imm_o (ID_pc_imm                                                ),
-        .pc_i     (IF_pc_o                                                  ),
-        .pc_o     (ID_pc                                                    ),
-        .BP_hit_i (IF_BPHit                                                 ),
-        .BP_hit_o (ID_BPHit                                                 ),
-        .Stall_i  (Stall | MEM_Stall                                        )
+        .pc_i     (IF_pc_o                                                        ),
+        .pc_o     (ID_pc                                                          ),
+        .BP_hit_i (IF_BPHit                                                       ),
+        .BP_hit_o (ID_BPHit                                                       ),
+        .Stall_i  (Stall | MEM_Stall                                              )
     );
 
 // ID stage
@@ -338,7 +339,7 @@ module RISCV_Pipeline (
         .RDaddr_i   (EX_RDaddr         ),
         .RDaddr_o   (MEM_RDaddr        ),
         .Stall_i    (MEM_Stall         ),
-        .flush_i    (0           )
+        .flush_i    (0                 )
     );
 
 // Mem stage

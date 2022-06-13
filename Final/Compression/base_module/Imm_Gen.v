@@ -1,6 +1,6 @@
 module Imm_Gen (
     input      [31:0] instruction_i,
-    output reg [31:0] imm_o
+    output reg signed [31:0] imm_o
 );
 
     always @(*) begin

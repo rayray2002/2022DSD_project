@@ -18,7 +18,7 @@ set_fix_hold                          [get_clocks CLK]
 set_dont_touch_network                [get_clocks CLK]
 set_ideal_network                     [get_ports clk]
 set_clock_uncertainty            0.1  [get_clocks CLK] 
-set_clock_latency                0.5  [get_clocks CLK] 
+set_clock_latency                0.1  [get_clocks CLK] 
 
 set_max_fanout 6 [all_inputs] 
 
@@ -38,8 +38,8 @@ remove_unconnected_ports -blast_buses [get_cells -hierarchical *]
 #Compile and save files
 #You may modified setting of compile 
 #####################################################
-compile_ultra
-# compile
+# compile_ultra
+compile
 write_sdf -version 2.1 CHIP_syn.sdf
 write -format verilog -hier -output CHIP_syn.v
 write -format ddc     -hier -output CHIP_syn.ddc  

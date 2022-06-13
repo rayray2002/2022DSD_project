@@ -13,7 +13,7 @@ module Prediction (
     output        Hit_4_o
 );
 
-    parameter  NUM_INDEX_BIT = 4                 ;
+    parameter  NUM_INDEX_BIT = 5                 ;
     localparam NUM_ENTRY     = 1 << NUM_INDEX_BIT;
 
     localparam S_NONTAKEN      = 0;

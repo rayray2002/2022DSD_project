@@ -15,6 +15,8 @@ module ID_EX(
         branch_o,
         func3_0_i,
         func3_0_o,
+        BP_hit_i,
+        BP_hit_o,
         pc_imm_i,
         pc_imm_o,
         pc_plus_i,
@@ -48,6 +50,8 @@ module ID_EX(
     output reg branch_o;
     input func3_0_i;
     output reg func3_0_o;
+    input BP_hit_i;
+    output reg BP_hit_o;
     input [31: 0] pc_imm_i;
     output reg [31: 0] pc_imm_o;
     input [31: 0] pc_plus_i;
@@ -72,6 +76,7 @@ module ID_EX(
             jalr_o <= 1'b0;
             branch_o <= 1'b0;
             func3_0_o <= 3'b0;
+            BP_hit_o <= 1'b0;
             pc_imm_o <= 32'b0;
             pc_plus_o <= 32'b0;
             imm_o <= 32'b0;
@@ -87,6 +92,7 @@ module ID_EX(
             jalr_o <= jalr_o;
             branch_o <= branch_o;
             func3_0_o <= func3_0_o;
+            BP_hit_o <= BP_hit_o;
             pc_imm_o <= pc_imm_o;
             pc_plus_o <= pc_plus_o;
             imm_o <= imm_o;
@@ -103,6 +109,7 @@ module ID_EX(
             jalr_o <= 1'b0;
             branch_o <= 1'b0;
             func3_0_o <= 3'b0;
+            BP_hit_o <= 1'b0;
             pc_imm_o <= 32'b0;
             pc_plus_o <= 32'b0;
             imm_o <= 32'b0;
@@ -119,6 +126,7 @@ module ID_EX(
             jalr_o <= jalr_i;
             branch_o <= branch_i;
             func3_0_o <= func3_0_i;
+            BP_hit_o <= BP_hit_i;
             pc_imm_o <= pc_imm_i;
             pc_plus_o <= pc_plus_i;
             imm_o <= imm_i;

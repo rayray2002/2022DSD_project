@@ -2,8 +2,8 @@ from tempfile import tempdir
 import numpy as np
 
 ### modify (base, n) by yourself
-base = 0     # base >=0
-n = 2      # 0< base+n <=256
+base = 128     # base >=0
+n = 128      # 0< base+n <=256
 
 
 def getbin(x, n_bit):

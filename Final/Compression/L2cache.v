@@ -41,6 +41,7 @@ module L2cache (
     wire proc_access;
     wire I_access   ;
     wire D_access   ;
+    reg  access, access_nxt;
 
     wire [153:0] sram_rdata;
     reg  [153:0] sram_wdata;
@@ -104,7 +105,11 @@ module L2cache (
 
             STATE_WRITEBACK_D : begin
                 if (memd_ready) begin
-                    state_nxt = STATE_ALLOCATE_D;
+                    if (I_access) begin
+                        state_nxt = STATE_ALLOCATE_I;
+                    end else begin
+                        state_nxt = STATE_ALLOCATE_D;
+                    end
                 end
             end
 
@@ -191,34 +196,22 @@ module L2cache (
 
     assign sram_dirty = sram_rdata[151];
     // assign sram_tag   = sram_rdata[150:128];
-    assign sram_data  = sram_rdata[127:0];
+    assign sram_data = sram_rdata[127:0];
 
-    assign sram_tag   = sram_addr[27:5];
+    assign sram_tag = sram_addr[27:5];
     // assign sram_index = sram_addr[4:0];
 
     always @* begin
         // I/D(1), valid(1), dirty(1), tag(23), word0(32), word1(32), word2(32), word3(32)
-        sram_wdata = { I_access, 2'b11, sram_tag, sram_data };
+        sram_wdata = {3'b111, sram_tag, L1d_wdata_i};
 
-        if (state == STATE_READY_I) begin
-            // allocate
-            // sram_wdata[151]   = 0; // not dirty
-            // sram_wdata[127:0] = memi_rdata;
-            sram_wdata = { I_access, 2'b10, sram_tag, memi_rdata };
-        end else
         if (state == STATE_READY_D) begin
-            // allocate
-            // sram_wdata[151]   = 0; // not dirty
-            // sram_wdata[127:0] = memd_rdata;
-            sram_wdata = { I_access, 2'b10, sram_tag, memd_rdata };
+            sram_wdata = {3'b110, sram_tag, memd_rdata};
         end
         else begin
             // write hit
-            // sram_wdata[151] = 1; // dirty
-            if (I_access)
-                sram_wdata = { I_access, 2'b11, sram_tag, L1i_wdata_i };
-            else
-                sram_wdata = { I_access, 2'b11, sram_tag, L1d_wdata_i };
+            sram_wdata[151] = 1; // dirty
+            sram_wdata = {3'b111, sram_tag, L1d_wdata_i};
         end
     end
 endmodule

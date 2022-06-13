@@ -18,7 +18,7 @@ def fib(n):
 
 # Modify number of sequence here
 # Note: nb >= 3 && nb <= 47 (if nb >= 48, there will be overflow)
-nb = 16
+nb = 47
 
 fib_list  = fib(nb)
 sort_list = sorted(fib_list, reverse=True)
