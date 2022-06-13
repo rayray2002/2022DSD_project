@@ -1,5 +1,5 @@
 .DS_Store
 *.log
 *.sh
-CHIP_syn.*
+# CHIP_syn.*
 dsdl

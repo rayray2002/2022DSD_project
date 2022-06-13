@@ -27,7 +27,7 @@ module RISCV_Pipeline (
 // IF
     wire        [31:0] IF_pc_i, IF_pc_o, IF_instruction, IF_instruction_raw, IF_pc_plus, IF_pc_plus2, IF_pc_plus4, IF_BTB_addr4, IF_BTB_addr2, IF_BTB_addr;
     wire signed [31:0] IF_pc_imm, IF_imm;
-    wire               IF_jal, IF_jalr, IF_BPHit, IF_compressed, IF_branch;
+    wire               IF_jal, IF_jalr, IF_BPHit, IF_compressed, IF_branch, IF_BPHit2, IF_BPHit4;
 
 // ID
     wire        [31:0] ID_instr, ID_pc_plus, ID_pc_imm, ID_pc, ID_jal_addr;
@@ -339,7 +339,7 @@ module RISCV_Pipeline (
         .RDaddr_i   (EX_RDaddr         ),
         .RDaddr_o   (MEM_RDaddr        ),
         .Stall_i    (MEM_Stall         ),
-        .flush_i    (0                 )
+        .flush_i    (1'b0                 )
     );
 
 // Mem stage

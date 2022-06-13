@@ -1,0 +1,38 @@
+Gate level sim: run time 457042.500 ns
+ncsim> run
+-----------------------------------------------------
+
+START!!! Simulation Start .....
+
+-----------------------------------------------------
+
+--------------------------- Simulation FINISH !!---------------------------
+============================================================================
+
+ \(^o^)/ CONGRATULATIONS!!  The simulation result is PASS!!!
+
+============================================================================
+Simulation complete via $finish(1) at time 457042500 PS + 0
+./Final_tb.v:146               #(`CYCLE) $finish;                  
+ncsim> exit
+
+Synthesis result: 317261.033111 um2
+Number of ports:                         1473
+Number of nets:                         24719
+Number of cells:                        22802
+Number of combinational cells:          18522
+Number of sequential cells:              4219
+Number of macros/black boxes:               0
+Number of buf/inv:                       5393
+Number of references:                     154
+
+Combinational area:             193953.411047
+Buf/Inv area:                    39607.131668
+Noncombinational area:          123307.622065
+Macro/Black Box area:                0.000000
+Net Interconnect area:         2641766.827606
+
+Total cell area:                317261.033111
+Total area:                    2959027.860718
+
+AT score = 1.45E11

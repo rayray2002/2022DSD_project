@@ -46,18 +46,18 @@ module L2cache (
     wire conflict   ;
     reg  access, access_nxt;
 
-    wire [153:0] sram_rdata;
-    wire [153:0] sram_wdata;
-    wire [ 22:0] sram_tag  ;
-    wire [  4:0] sram_index;
+    wire [154:0] sram_rdata;
+    wire [154:0] sram_wdata;
+    wire [ 23:0] sram_tag  ;
+    wire [  3:0] sram_index;
 
     wire [ 27:0] I_sram_addr ;
-    wire [153:0] I_sram_wdata;
+    wire [154:0] I_sram_wdata;
     reg          I_sram_write;
     reg          I_sram_read ;
 
     wire [ 27:0] D_sram_addr ;
-    wire [153:0] D_sram_wdata;
+    wire [154:0] D_sram_wdata;
     reg          D_sram_write;
     reg          D_sram_read ;
 
@@ -74,7 +74,7 @@ module L2cache (
     reg [1:0] I_state_nxt;
 
     reg [1:0] D_state    ;
-    reg [2:0] D_state_nxt;
+    reg [1:0] D_state_nxt;
 
     reg SRAM_state    ;
     reg SRAM_state_nxt;
@@ -104,7 +104,7 @@ module L2cache (
         .addr_i (sram_addr               ),
         .wdata_i(sram_wdata              ),
         .write_i(sram_write              ),
-        .I_D    (conflict ? 0 : I_access),
+        .I_D    (conflict ? 1'b0 : I_access),
         
         .rdata_o(sram_rdata              ),
         .hit_o  (sram_hit                )
@@ -233,7 +233,7 @@ module L2cache (
 
             STATE_WRITEBACK : begin
                 memd_write = 1;
-                memd_addr  = {sram_rdata[150:128], L1i_addr_i[4:0]};
+                memd_addr  = {sram_rdata[151:128], L1i_addr_i[3:0]};
             end
 
             STATE_ALLOCATE : begin
@@ -253,7 +253,7 @@ module L2cache (
 
             STATE_WRITEBACK : begin
                 memd_write = 1;
-                memd_addr  = {sram_rdata[150:128], L1d_addr_i[4:0]};
+                memd_addr  = {sram_rdata[151:128], L1d_addr_i[3:0]};
             end
 
             STATE_ALLOCATE : begin
@@ -278,9 +278,9 @@ module L2cache (
     assign memi_addr = L1i_addr_i;
     // assign memd_addr = L1d_addr_i;
 
-    assign sram_dirty = sram_rdata[151];
+    assign sram_dirty = sram_rdata[152];
     assign sram_data  = sram_rdata[127:0];
-    assign sram_tag   = sram_addr[27:5];
+    assign sram_tag   = sram_addr[27:4];
 
     assign sram_addr  = conflict ? (~permission ? L1i_addr_i : L1d_addr_i) : (I_access ? L1i_addr_i : L1d_addr_i);
     assign sram_write = conflict ? (~permission ? I_sram_write : D_sram_write) : (I_access ? I_sram_write : D_sram_write);

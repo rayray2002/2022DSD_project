@@ -6,7 +6,7 @@ check_design
 #You may modified the clock constraints 
 #or add more constraints for your design
 ####################################################
-set cycle  3.5
+set cycle  5
 ####################################################
 
 
@@ -17,7 +17,7 @@ create_clock -name CLK -period $cycle [get_ports clk]
 set_fix_hold                          [get_clocks CLK]
 set_dont_touch_network                [get_clocks CLK]
 set_ideal_network                     [get_ports clk]
-set_clock_uncertainty            0.1  [get_clocks CLK] 
+set_clock_uncertainty            0.5  [get_clocks CLK] 
 set_clock_latency                0.1  [get_clocks CLK] 
 
 set_max_fanout 6 [all_inputs] 
@@ -32,14 +32,14 @@ set_input_delay  $t_in  -clock CLK [remove_from_collection [all_inputs] [get_por
 set_output_delay $t_out -clock CLK [all_outputs]
 #####################################################
 
-set_fix_multiple_port_nets -all -constants -buffer_constants [get_designs *]
+# set_fix_multiple_port_nets -all -constants -buffer_constants [get_designs *]
 remove_unconnected_ports -blast_buses [get_cells -hierarchical *]
 
 #Compile and save files
 #You may modified setting of compile 
 #####################################################
-# compile_ultra
-compile
+compile_ultra
+# compile -map_effort high -boundary_optimization
 write_sdf -version 2.1 CHIP_syn.sdf
 write -format verilog -hier -output CHIP_syn.v
 write -format ddc     -hier -output CHIP_syn.ddc  
